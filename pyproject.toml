@@ -1,6 +1,6 @@
 [project]
 name = "bsbr"
-version = "0.1.0"
+version = "0.1.1"
 description = "Block Sparse Attention with Block Retrieval"
 readme = "README.md"
 authors = [
