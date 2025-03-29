@@ -16,10 +16,16 @@ import os
 import json
 from tqdm import tqdm
 from typing import Dict, List, Tuple, Optional
-from transformers import GPT2Tokenizer, GPT2LMHeadModel, AutoTokenizer
+from transformers import GPT2Tokenizer, GPT2LMHeadModel, AutoTokenizer, AutoConfig
 from datasets import load_dataset
 
-from bsbr_transformers.gpt2_converter import convert_to_bsbr
+# Make sure bsbr_transformers is importable (assuming it's installed or in PYTHONPATH)
+try:
+    from bsbr_transformers.gpt2_converter import convert_to_bsbr
+except ImportError:
+    print("Error: bsbr_transformers package not found. Make sure it's installed.")
+    import sys
+    sys.exit(1)
 
 # Set plotting style
 sns.set_style("whitegrid")
@@ -68,8 +74,8 @@ def parse_args():
     parser.add_argument(
         "--output_dir", 
         type=str, 
-        default="./benchmark_results", 
-        help="Directory to save results (default: ./benchmark_results)"
+        default="research/conversion_experiments/results", 
+        help="Directory to save results (default: research/conversion_experiments/results)"
     )
     parser.add_argument(
         "--quality_eval", 
@@ -225,7 +231,7 @@ def run_scaling_analysis(
     seq_lengths: List[int],
     batch_sizes: List[int],
     num_repeats: int = 5,
-    output_dir: str = "./benchmark_results",
+    output_dir: str = "research/conversion_experiments/results",
     profile_memory: bool = False,
 ):
     """Run scaling analysis with different sequence lengths."""
@@ -235,8 +241,30 @@ def run_scaling_analysis(
     # Create output directory
     os.makedirs(output_dir, exist_ok=True)
     
-    # Load models
+    # Load model config first to check max sequence length
     print(f"Loading model: {model_name}")
+    config = AutoConfig.from_pretrained(model_name)
+    max_seq_len = config.max_position_embeddings
+    print(f"Model maximum sequence length: {max_seq_len}")
+
+    # Filter sequence lengths and batch sizes based on model capability
+    original_seq_lengths = seq_lengths[:]
+    original_batch_sizes = batch_sizes[:]
+    valid_indices = [i for i, sl in enumerate(seq_lengths) if sl <= max_seq_len]
+
+    if len(valid_indices) < len(seq_lengths):
+        skipped_lengths = [sl for i, sl in enumerate(seq_lengths) if i not in valid_indices]
+        print(f"Warning: Skipping sequence lengths > {max_seq_len}: {skipped_lengths}")
+        seq_lengths = [seq_lengths[i] for i in valid_indices]
+        batch_sizes = [batch_sizes[i] for i in valid_indices]
+
+    if not seq_lengths:
+        print("Error: No valid sequence lengths remaining after filtering by max_position_embeddings.")
+        return {}
+
+    print(f"Running benchmarks for sequence lengths: {seq_lengths}")
+
+    # Load models
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     original_model = GPT2LMHeadModel.from_pretrained(model_name).to(device)
     
@@ -255,6 +283,9 @@ def run_scaling_analysis(
             "chunk_size": chunk_size,
             "device": device,
             "num_repeats": num_repeats,
+            "profile_memory": profile_memory,
+            "seq_lengths": seq_lengths,
+            "batch_sizes": batch_sizes,
         },
         "original": [],
         "bsbr": []
@@ -313,9 +344,14 @@ def run_scaling_analysis(
         speedup = original_results["mean_time"] / bsbr_results["mean_time"]
         print(f"Speedup: {speedup:.2f}x")
         
-        # Save intermediate results
-        with open(os.path.join(output_dir, "scaling_results.json"), "w") as f:
-            json.dump(results, f, indent=2)
+        # Save intermediate results (now includes more config info)
+        results_file_path = os.path.join(output_dir, "scaling_results.json")
+        try:
+            with open(results_file_path, "w") as f:
+                json.dump(results, f, indent=2)
+            print(f"Saved benchmark results to {results_file_path}")
+        except Exception as e:
+            print(f"Error saving results to {results_file_path}: {e}")
     
     # Plot results
     plot_scaling_results(results, output_dir)
@@ -360,6 +396,7 @@ def plot_scaling_results(results, output_dir):
     plt.legend()
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, "inference_time_vs_seq_length.png"))
+    plt.close()
     
     # 2. Tokens per second vs sequence length
     plt.figure(figsize=(10, 6))
@@ -374,6 +411,7 @@ def plot_scaling_results(results, output_dir):
     plt.legend()
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, "throughput_vs_seq_length.png"))
+    plt.close()
     
     # 3. Speedup ratio vs sequence length
     plt.figure(figsize=(10, 6))
@@ -386,6 +424,7 @@ def plot_scaling_results(results, output_dir):
     plt.grid(True, which="both", ls="--")
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, "speedup_vs_seq_length.png"))
+    plt.close()
     
     # 4. Memory usage if available
     if has_memory:
@@ -401,6 +440,7 @@ def plot_scaling_results(results, output_dir):
         plt.legend()
         plt.tight_layout()
         plt.savefig(os.path.join(output_dir, "memory_usage_vs_seq_length.png"))
+        plt.close()
         
         # 5. Memory savings percentage
         plt.figure(figsize=(10, 6))
@@ -412,6 +452,7 @@ def plot_scaling_results(results, output_dir):
         plt.grid(True, which="both", ls="--")
         plt.tight_layout()
         plt.savefig(os.path.join(output_dir, "memory_savings_vs_seq_length.png"))
+        plt.close()
     
     # 6. Fit power law to scaling curves
     # For original model
@@ -442,15 +483,21 @@ def plot_scaling_results(results, output_dir):
     plt.legend()
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, "scaling_exponent_analysis.png"))
+    plt.close()
     
     # Save scaling exponents
-    with open(os.path.join(output_dir, "scaling_exponents.json"), "w") as f:
-        json.dump({
-            "original_exponent": float(orig_exponent),
-            "bsbr_exponent": float(bsbr_exponent),
-            "speedup_at_max_length": float(speedups[-1]),
-            "memory_savings_at_max_length": float(memory_savings[-1]) if has_memory else None
-        }, f, indent=2)
+    scaling_exponents_path = os.path.join(output_dir, "scaling_exponents.json")
+    try:
+        with open(scaling_exponents_path, "w") as f:
+            json.dump({
+                "original_exponent": float(orig_exponent),
+                "bsbr_exponent": float(bsbr_exponent),
+                "speedup_at_max_length": float(speedups[-1]),
+                "memory_savings_at_max_length": float(memory_savings[-1]) if has_memory else None
+            }, f, indent=2)
+        print(f"Saved scaling exponents to {scaling_exponents_path}")
+    except Exception as e:
+        print(f"Error saving scaling exponents to {scaling_exponents_path}: {e}")
     
     print(f"\nScaling Analysis Results:")
     print(f"Original Transformer scaling: O(n^{orig_exponent:.2f})")
@@ -464,7 +511,7 @@ def evaluate_model_quality(
     model_name: str,
     chunk_size: int,
     dataset_name: str = "wikitext",
-    output_dir: str = "./benchmark_results",
+    output_dir: str = "research/conversion_experiments/results",
 ):
     """Evaluate model quality using perplexity on standard datasets."""
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -503,20 +550,29 @@ def evaluate_model_quality(
     ppl_diff_percent = ((bsbr_ppl - original_ppl) / original_ppl) * 100
     
     quality_results = {
-        "dataset": dataset_name,
+        "config": {
+            "model_name": model_name,
+            "chunk_size": chunk_size,
+            "dataset_name": dataset_name,
+            "device": device,
+        },
         "original_perplexity": original_ppl,
         "bsbr_perplexity": bsbr_ppl,
         "perplexity_difference_percent": ppl_diff_percent
     }
     
     print(f"\nQuality Evaluation Results:")
-    print(f"Original model perplexity: {original_ppl:.2f}")
-    print(f"BSBR model perplexity: {bsbr_ppl:.2f}")
-    print(f"Relative difference: {ppl_diff_percent:.2f}%")
+    print(f"Original Perplexity: {original_ppl:.4f}")
+    print(f"BSBR Perplexity: {bsbr_ppl:.4f}")
     
-    # Save results
-    with open(os.path.join(output_dir, "quality_results.json"), "w") as f:
-        json.dump(quality_results, f, indent=2)
+    # Save quality results
+    quality_results_path = os.path.join(output_dir, f"quality_results_{dataset_name}.json")
+    try:
+        with open(quality_results_path, "w") as f:
+            json.dump(quality_results, f, indent=2)
+        print(f"Saved quality results to {quality_results_path}")
+    except Exception as e:
+        print(f"Error saving quality results to {quality_results_path}: {e}")
     
     # Plot perplexity comparison
     plt.figure(figsize=(8, 6))
@@ -526,6 +582,7 @@ def evaluate_model_quality(
     plt.title(f'Perplexity Comparison on {dataset_name}')
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, f"perplexity_comparison_{dataset_name}.png"))
+    plt.close()
     
     return quality_results
 
@@ -536,39 +593,34 @@ def main():
     # Create output directory
     os.makedirs(args.output_dir, exist_ok=True)
     
-    # Parse sequence lengths and batch sizes
     seq_lengths = [int(x) for x in args.seq_lengths.split(',')]
     batch_sizes = [int(x) for x in args.batch_sizes.split(',')]
     
-    if len(batch_sizes) != len(seq_lengths):
-        # If batch sizes don't match sequence lengths, use the first batch size for all
+    if len(seq_lengths) != len(batch_sizes):
+        # Adjust batch sizes if only one provided
         if len(batch_sizes) == 1:
+            print(f"Using batch size {batch_sizes[0]} for all sequence lengths.")
             batch_sizes = [batch_sizes[0]] * len(seq_lengths)
         else:
-            raise ValueError("Number of batch sizes must match number of sequence lengths")
+            raise ValueError("Number of sequence lengths must match number of batch sizes unless only one batch size is provided.")
     
-    # Run scaling analysis
-    scaling_results = run_scaling_analysis(
-        args.model_name,
-        args.chunk_size,
-        seq_lengths,
-        batch_sizes,
-        args.num_repeats,
-        args.output_dir,
-        args.profile_memory
+    run_scaling_analysis(
+        model_name=args.model_name,
+        chunk_size=args.chunk_size,
+        seq_lengths=seq_lengths,
+        batch_sizes=batch_sizes,
+        num_repeats=args.num_repeats,
+        output_dir=args.output_dir,
+        profile_memory=args.profile_memory,
     )
     
-    # Optionally evaluate model quality
     if args.quality_eval:
-        quality_results = evaluate_model_quality(
-            args.model_name,
-            args.chunk_size,
-            args.eval_dataset,
-            args.output_dir
+        evaluate_model_quality(
+            model_name=args.model_name,
+            chunk_size=args.chunk_size,
+            dataset_name=args.eval_dataset,
+            output_dir=args.output_dir,
         )
-    
-    print(f"\nAll benchmark results saved to {args.output_dir}")
-
 
 if __name__ == "__main__":
     main() 

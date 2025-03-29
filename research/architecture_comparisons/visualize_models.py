@@ -4,8 +4,9 @@ import pandas as pd
 import seaborn as sns
 import os
 import argparse
-from typing import Dict, List, Tuple
 import json
+import sys
+from typing import Dict, List, Tuple
 from matplotlib.ticker import FuncFormatter
 
 # Configure seaborn
@@ -13,43 +14,6 @@ sns.set_theme(style="whitegrid")
 plt.rcParams["figure.figsize"] = (12, 8)
 plt.rcParams["savefig.dpi"] = 300
 plt.rcParams["font.size"] = 12
-
-
-def load_example_data():
-    """Load example data for visualization"""
-    time_results = {
-        "BSBR": [0.043, 0.058, 0.156, 0.428, 1.25],
-        "Linear": [0.213, 0.490, 1.096, 1.862, 3.54],
-        "DeltaNet": [1.273, 2.366, 4.837, 9.960, 18.42],
-        "Standard": [0.056, 0.215, 0.836, 3.285, 12.87],
-        "SlidingWindow": [0.062, 0.196, 0.592, 1.834, 4.98],
-        "Hopfield": [0.254, 0.568, 1.245, 2.143, 4.25],
-        "GAU": [0.138, 0.342, 0.731, 1.528, 3.18]
-    }
-    
-    memory_results = {
-        "BSBR": [7.66, 7.66, 7.66, 7.67, 7.68],
-        "Linear": [6.40, 6.40, 6.40, 6.41, 6.45],
-        "DeltaNet": [6.40, 6.40, 6.40, 6.41, 6.45],
-        "Standard": [7.20, 8.34, 11.58, 23.92, 86.45],
-        "SlidingWindow": [7.14, 7.98, 9.54, 12.65, 21.32],
-        "Hopfield": [6.62, 6.63, 6.64, 6.68, 6.72],
-        "GAU": [7.82, 7.85, 7.92, 8.12, 8.36]
-    }
-    
-    param_counts = {
-        "BSBR": 5983488,
-        "Linear": 3614720,
-        "DeltaNet": 3614720,
-        "Standard": 3614720,
-        "SlidingWindow": 3614720,
-        "Hopfield": 3614720,
-        "GAU": 4403712
-    }
-    
-    seq_lengths = [64, 256, 512, 1024, 2048]
-    
-    return time_results, memory_results, param_counts, seq_lengths
 
 
 def plot_inference_heatmap(time_results, seq_lengths, output_path=None):
@@ -75,9 +39,10 @@ def plot_inference_heatmap(time_results, seq_lengths, output_path=None):
     
     if output_path:
         plt.savefig(output_path)
+        print(f"Saved inference heatmap to {output_path}")
     
     plt.tight_layout()
-    plt.show()
+    plt.close()
     
     return plt
 
@@ -148,9 +113,10 @@ def plot_radar_chart(time_results, memory_results, param_counts, seq_lengths, ou
     
     if output_path:
         plt.savefig(output_path)
+        print(f"Saved radar chart to {output_path}")
     
     plt.tight_layout()
-    plt.show()
+    plt.close()
     
     return plt
 
@@ -192,9 +158,10 @@ def plot_scaling_curves(time_results, seq_lengths, output_path=None):
     
     if output_path:
         plt.savefig(output_path)
+        print(f"Saved scaling curves to {output_path}")
     
     plt.tight_layout()
-    plt.show()
+    plt.close()
     
     return plt
 
@@ -229,9 +196,10 @@ def plot_memory_scaling(memory_results, seq_lengths, output_path=None):
     
     if output_path:
         plt.savefig(output_path)
+        print(f"Saved memory scaling plot to {output_path}")
     
     plt.tight_layout()
-    plt.show()
+    plt.close()
     
     return plt
 
@@ -280,9 +248,10 @@ def plot_combined_performance(time_results, memory_results, param_counts, seq_le
     
     if output_path:
         plt.savefig(output_path)
+        print(f"Saved combined performance plot to {output_path}")
     
     plt.tight_layout()
-    plt.show()
+    plt.close()
     
     return plt
 
@@ -318,81 +287,81 @@ def plot_summary_dashboard(time_results, memory_results, param_counts, seq_lengt
         os.path.join(output_dir, "combined_performance.png") if output_dir else None
     )
     
-    print(f"All visualizations have been generated and saved to {output_dir}")
+    if output_dir:
+        plt.savefig(os.path.join(output_dir, "summary_dashboard.png"))
+        print(f"Saved summary dashboard to {os.path.join(output_dir, 'summary_dashboard.png')}")
+
+    plt.tight_layout()
+    plt.close()
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Visualize transformer model comparisons")
-    parser.add_argument("--data_file", type=str, default=None, 
-                        help="JSON file containing evaluation results")
-    parser.add_argument("--output_dir", type=str, default="visualization_results", 
-                        help="Directory to save visualization outputs")
-    parser.add_argument("--plot_type", type=str, choices=[
-                        "heatmap", "radar", "scaling", "memory", "combined", "all"], 
-                        default="all", help="Type of plot to generate")
-    parser.add_argument("--use_example_data", action="store_true", 
-                        help="Use example data for visualization")
-    
+    parser = argparse.ArgumentParser(description="Visualize model comparison results")
+    parser.add_argument("--results_file", type=str, default="research/architecture_comparisons/results/comparison_results.json",
+                        help="Path to the comparison_results.json file")
+    parser.add_argument("--output_dir", type=str, default="research/architecture_comparisons/results",
+                        help="Directory to save visualization plots")
+    parser.add_argument("--plot_types", type=str, nargs="+", 
+                        default=["heatmap", "radar", "scaling", "memory", "combined", "dashboard"],
+                        help="Types of plots to generate: heatmap, radar, scaling, memory, combined, dashboard")
     args = parser.parse_args()
+
+    # Create output directory if it doesn't exist
+    os.makedirs(args.output_dir, exist_ok=True)
+
+    # Load results from JSON file
+    try:
+        with open(args.results_file, 'r') as f:
+            results_data = json.load(f)
+        print(f"Loaded results from {args.results_file}")
+    except FileNotFoundError:
+        print(f"Error: Results file not found at {args.results_file}")
+        sys.exit(1)
+    except json.JSONDecodeError:
+        print(f"Error: Could not decode JSON from {args.results_file}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"An unexpected error occurred while loading the results file: {e}")
+        sys.exit(1)
+
+    # Extract data
+    time_results = results_data.get("time_results")
+    memory_results = results_data.get("memory_results")
+    param_counts = results_data.get("param_counts")
+    seq_lengths = results_data.get("seq_lengths")
+
+    if not all([time_results, memory_results, param_counts, seq_lengths]):
+        print("Error: Missing required data (time_results, memory_results, param_counts, seq_lengths) in the results file.")
+        sys.exit(1)
+
+    # Generate selected plots
+    print("\nGenerating plots...")
     
-    # Load data
-    if args.use_example_data or args.data_file is None:
-        time_results, memory_results, param_counts, seq_lengths = load_example_data()
-        print("Using example data for visualization")
-    else:
-        # Load data from JSON file
-        try:
-            with open(args.data_file, 'r') as f:
-                data = json.load(f)
-                time_results = data.get("time_results", {})
-                memory_results = data.get("memory_results", {})
-                param_counts = data.get("param_counts", {})
-                seq_lengths = data.get("seq_lengths", [])
-            print(f"Loaded data from {args.data_file}")
-        except Exception as e:
-            print(f"Error loading data from file: {e}")
-            print("Falling back to example data")
-            time_results, memory_results, param_counts, seq_lengths = load_example_data()
+    if "heatmap" in args.plot_types:
+        plot_inference_heatmap(time_results, seq_lengths, 
+                               output_path=os.path.join(args.output_dir, "inference_heatmap.png"))
     
-    # Create output directory if needed
-    if args.output_dir:
-        os.makedirs(args.output_dir, exist_ok=True)
+    if "radar" in args.plot_types:
+        plot_radar_chart(time_results, memory_results, param_counts, seq_lengths, 
+                         output_path=os.path.join(args.output_dir, "radar_chart.png"))
     
-    # Generate requested plots
-    if args.plot_type == "heatmap" or args.plot_type == "all":
-        plot_inference_heatmap(
-            time_results, seq_lengths, 
-            os.path.join(args.output_dir, "inference_heatmap.png") if args.output_dir else None
-        )
+    if "scaling" in args.plot_types:
+        plot_scaling_curves(time_results, seq_lengths, 
+                              output_path=os.path.join(args.output_dir, "scaling_curves.png"))
+        
+    if "memory" in args.plot_types:
+        plot_memory_scaling(memory_results, seq_lengths, 
+                              output_path=os.path.join(args.output_dir, "memory_scaling.png"))
     
-    if args.plot_type == "radar" or args.plot_type == "all":
-        plot_radar_chart(
-            time_results, memory_results, param_counts, seq_lengths,
-            os.path.join(args.output_dir, "radar_chart.png") if args.output_dir else None
-        )
-    
-    if args.plot_type == "scaling" or args.plot_type == "all":
-        plot_scaling_curves(
-            time_results, seq_lengths,
-            os.path.join(args.output_dir, "scaling_curves.png") if args.output_dir else None
-        )
-    
-    if args.plot_type == "memory" or args.plot_type == "all":
-        plot_memory_scaling(
-            memory_results, seq_lengths,
-            os.path.join(args.output_dir, "memory_scaling.png") if args.output_dir else None
-        )
-    
-    if args.plot_type == "combined" or args.plot_type == "all":
-        plot_combined_performance(
-            time_results, memory_results, param_counts, seq_lengths,
-            os.path.join(args.output_dir, "combined_performance.png") if args.output_dir else None
-        )
-    
-    if args.plot_type == "all":
-        print(f"All visualizations have been generated and saved to {args.output_dir}")
-    else:
-        print(f"{args.plot_type.capitalize()} visualization has been generated and saved to {args.output_dir}")
+    if "combined" in args.plot_types:
+        plot_combined_performance(time_results, memory_results, param_counts, seq_lengths, 
+                                  output_path=os.path.join(args.output_dir, "combined_performance.png"))
+        
+    if "dashboard" in args.plot_types:
+        plot_summary_dashboard(time_results, memory_results, param_counts, seq_lengths, 
+                               output_dir=args.output_dir)
+
+    print("\nVisualization complete.")
 
 
 if __name__ == "__main__":

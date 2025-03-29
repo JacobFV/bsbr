@@ -4,6 +4,7 @@ import pandas as pd
 import os
 import sys
 import argparse
+import json
 from typing import Dict, List, Tuple
 
 
@@ -111,7 +112,7 @@ def estimate_complexity(seq_lengths: List[int], times: List[float]) -> Tuple[str
     return complexity, r_squared
 
 
-def analyze_results(seq_lengths: List[int], time_results: Dict[str, List[float]], memory_results: Dict[str, List[float]]):
+def analyze_results(seq_lengths: List[int], time_results: Dict[str, List[float]], memory_results: Dict[str, List[float]], args):
     """
     Analyze the performance results of different models.
     
@@ -119,6 +120,7 @@ def analyze_results(seq_lengths: List[int], time_results: Dict[str, List[float]]
         seq_lengths: List of sequence lengths
         time_results: Dictionary mapping model names to lists of inference times
         memory_results: Dictionary mapping model names to lists of memory usage
+        args: ArgumentParser object
     """
     print("\n===== COMPLEXITY ANALYSIS =====")
     
@@ -170,10 +172,12 @@ def analyze_results(seq_lengths: List[int], time_results: Dict[str, List[float]]
     print(rel_df.to_string(index=False))
     
     # Create complexity plot
-    plt = plot_complexity_curves(seq_lengths, time_results, "Inference Time vs Sequence Length")
-    plt.savefig("complexity_analysis.png")
-    print("\nSaved complexity plot to complexity_analysis.png")
-    
+    plt_complexity = plot_complexity_curves(seq_lengths, time_results, "Inference Time vs Sequence Length")
+    complexity_plot_path = os.path.join(args.output_dir, "complexity_analysis.png")
+    plt_complexity.savefig(complexity_plot_path)
+    print(f"\nSaved complexity plot to {complexity_plot_path}")
+    plt.close(plt_complexity.gcf()) # Close the plot figure
+
     # Create log-log plot
     plt.figure(figsize=(12, 8))
     for model_name, times in time_results.items():
@@ -184,66 +188,50 @@ def analyze_results(seq_lengths: List[int], time_results: Dict[str, List[float]]
     plt.title("Inference Time vs Sequence Length (Log-Log Scale)")
     plt.legend()
     plt.grid(True)
-    plt.savefig("complexity_loglog.png")
-    print("Saved log-log plot to complexity_loglog.png")
+    loglog_plot_path = os.path.join(args.output_dir, "complexity_loglog.png")
+    plt.savefig(loglog_plot_path)
+    print(f"Saved log-log plot to {loglog_plot_path}")
+    plt.close() # Close the current plot figure
 
 
 def main():
     parser = argparse.ArgumentParser(description="Analyze model comparison results")
-    parser.add_argument("--seq_lengths", type=int, nargs="+", default=[64, 256, 512, 1024], 
-                        help="Sequence lengths used in evaluation")
-    parser.add_argument("--use_example_data", action="store_true", 
-                        help="Use example/synthetic data instead of loading from files")
+    parser.add_argument("--results_file", type=str, default="research/architecture_comparisons/results/comparison_results.json",
+                        help="Path to the comparison_results.json file")
+    parser.add_argument("--output_dir", type=str, default="research/architecture_comparisons/results",
+                        help="Directory to save analysis plots")
     args = parser.parse_args()
-    
-    if args.use_example_data:
-        # Example results using synthetic data
-        # These are example values - replace with actual results from your runs
-        time_results = {
-            "BSBR": [0.043, 0.058, 0.156, 0.428],
-            "Linear": [0.213, 0.490, 1.096, 1.862],
-            "DeltaNet": [1.273, 2.366, 4.837, 9.960],
-            "Standard": [0.056, 0.215, 0.836, 3.285],
-            "SlidingWindow": [0.062, 0.196, 0.592, 1.834],
-            "Hopfield": [0.254, 0.568, 1.245, 2.143],
-            "GAU": [0.138, 0.342, 0.731, 1.528]
-        }
-        
-        memory_results = {
-            "BSBR": [7.66, 7.66, 7.66, 7.67],
-            "Linear": [6.40, 6.40, 6.40, 6.41],
-            "DeltaNet": [6.40, 6.40, 6.40, 6.41],
-            "Standard": [7.20, 8.34, 11.58, 23.92],
-            "SlidingWindow": [7.14, 7.98, 9.54, 12.65],
-            "Hopfield": [6.62, 6.63, 6.64, 6.68],
-            "GAU": [7.82, 7.85, 7.92, 8.12]
-        }
-    else:
-        # TODO: Add code to load results from files if needed
-        print("Loading results from files not implemented yet. Using example data.")
-        # Use the same example data as above
-        time_results = {
-            "BSBR": [0.043, 0.058, 0.156, 0.428],
-            "Linear": [0.213, 0.490, 1.096, 1.862],
-            "DeltaNet": [1.273, 2.366, 4.837, 9.960],
-            "Standard": [0.056, 0.215, 0.836, 3.285],
-            "SlidingWindow": [0.062, 0.196, 0.592, 1.834],
-            "Hopfield": [0.254, 0.568, 1.245, 2.143],
-            "GAU": [0.138, 0.342, 0.731, 1.528]
-        }
-        
-        memory_results = {
-            "BSBR": [7.66, 7.66, 7.66, 7.67],
-            "Linear": [6.40, 6.40, 6.40, 6.41],
-            "DeltaNet": [6.40, 6.40, 6.40, 6.41],
-            "Standard": [7.20, 8.34, 11.58, 23.92],
-            "SlidingWindow": [7.14, 7.98, 9.54, 12.65],
-            "Hopfield": [6.62, 6.63, 6.64, 6.68],
-            "GAU": [7.82, 7.85, 7.92, 8.12]
-        }
-    
-    seq_lengths = args.seq_lengths
-    analyze_results(seq_lengths, time_results, memory_results)
+
+    # Create output directory if it doesn't exist
+    os.makedirs(args.output_dir, exist_ok=True)
+
+    # Load results from JSON file
+    try:
+        with open(args.results_file, 'r') as f:
+            results_data = json.load(f)
+        print(f"Loaded results from {args.results_file}")
+    except FileNotFoundError:
+        print(f"Error: Results file not found at {args.results_file}")
+        sys.exit(1)
+    except json.JSONDecodeError:
+        print(f"Error: Could not decode JSON from {args.results_file}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"An unexpected error occurred while loading the results file: {e}")
+        sys.exit(1)
+
+    # Extract data
+    time_results = results_data.get("time_results")
+    memory_results = results_data.get("memory_results")
+    seq_lengths = results_data.get("seq_lengths")
+    # param_counts = results_data.get("param_counts") # Not used in this script
+
+    if not time_results or not memory_results or not seq_lengths:
+        print("Error: Missing required data (time_results, memory_results, seq_lengths) in the results file.")
+        sys.exit(1)
+
+    # Pass output_dir to the analysis function
+    analyze_results(seq_lengths, time_results, memory_results, args)
 
 
 if __name__ == "__main__":

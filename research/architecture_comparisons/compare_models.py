@@ -5,11 +5,8 @@ import time
 import argparse
 import matplotlib.pyplot as plt
 from typing import Dict, List, Tuple
-import sys
+import json
 import os
-
-# Add the project root to the path
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.bsbr import BSBRModel
 from src.bsbr_extras import (
@@ -352,7 +349,9 @@ def main():
     parser.add_argument("--dropout", type=float, default=0.1, help="Dropout probability")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", 
                         help="Device to use (cuda or cpu)")
-    parser.add_argument("--output", type=str, default="model_comparison.png", help="Output file for plots")
+    parser.add_argument("--output_dir", type=str, default="research/architecture_comparisons/results",
+                        help="Directory to save results and plots")
+    parser.add_argument("--plot_output", type=str, default="model_comparison.png", help="Output file for plots relative to output_dir")
     parser.add_argument("--seq_lengths", type=int, nargs="+", default=[64, 128, 256, 512, 1024], 
                         help="Sequence lengths to test")
     parser.add_argument("--n_tokens", type=int, default=50, 
@@ -363,6 +362,11 @@ def main():
     
     args = parser.parse_args()
     
+    # Create output directory if it doesn't exist
+    os.makedirs(args.output_dir, exist_ok=True)
+    plot_output_path = os.path.join(args.output_dir, args.plot_output)
+    results_json_path = os.path.join(args.output_dir, "comparison_results.json")
+
     evaluator = AutoregressiveEvaluator(
         vocab_size=args.vocab_size,
         hidden_dim=args.hidden_dim,
@@ -397,13 +401,27 @@ def main():
     memory_results = evaluator.evaluate_memory_usage(
         seq_lengths=args.seq_lengths
     )
-    
+
+    # Save results to JSON
+    results_data = {
+        "time_results": time_results,
+        "memory_results": memory_results,
+        "param_counts": param_counts,
+        "seq_lengths": args.seq_lengths
+    }
+    try:
+        with open(results_json_path, 'w') as f:
+            json.dump(results_data, f, indent=4)
+        print(f"\nResults saved to {results_json_path}")
+    except Exception as e:
+        print(f"Error saving results to {results_json_path}: {e}")
+
     # Plot results
     evaluator.plot_results(
         time_results=time_results,
         memory_results=memory_results,
         param_counts=param_counts,
-        output_path=args.output
+        output_path=plot_output_path
     )
 
 

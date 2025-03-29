@@ -145,10 +145,9 @@ wheels = [
 
 [[package]]
 name = "bsbr"
-version = "0.1.1"
+version = "0.1.2"
 source = { editable = "." }
 dependencies = [
-    { name = "datasets" },
     { name = "numpy" },
     { name = "torch" },
 ]
@@ -181,14 +180,15 @@ extras = [
     { name = "scipy" },
     { name = "seaborn" },
     { name = "torch" },
+]
+transformers = [
     { name = "transformers" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "accelerate", marker = "extra == 'extras'", specifier = ">=0.25.0" },
-    { name = "datasets", specifier = ">=3.5.0" },
-    { name = "datasets", marker = "extra == 'extras'" },
+    { name = "datasets", marker = "extra == 'extras'", specifier = ">=3.5.0" },
     { name = "griffe", marker = "extra == 'docs'", specifier = ">=1.7.0" },
     { name = "matplotlib", marker = "extra == 'extras'", specifier = ">=3.10.1" },
     { name = "mkdocs", marker = "extra == 'docs'", specifier = ">=1.5.3" },
@@ -213,9 +213,9 @@ requires-dist = [
     { name = "seaborn", marker = "extra == 'extras'", specifier = ">=0.13.2" },
     { name = "torch", specifier = ">=2.6.0" },
     { name = "torch", marker = "extra == 'extras'", specifier = ">=2.6.0" },
-    { name = "transformers", marker = "extra == 'extras'", specifier = ">=4.36.0" },
+    { name = "transformers", marker = "extra == 'transformers'", specifier = ">=4.36.0" },
 ]
-provides-extras = ["extras", "docs"]
+provides-extras = ["extras", "transformers", "docs"]
 
 [[package]]
 name = "certifi"

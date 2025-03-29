@@ -15,7 +15,13 @@ from tqdm import tqdm
 import os
 import json
 
-from bsbr_transformers.gpt2_converter import convert_to_bsbr
+# Make sure bsbr_transformers is importable
+try:
+    from bsbr_transformers.gpt2_converter import convert_to_bsbr
+except ImportError:
+    print("Error: bsbr_transformers package not found. Make sure it's installed.")
+    import sys
+    sys.exit(1)
 
 
 def parse_args():
@@ -47,8 +53,13 @@ def parse_args():
     parser.add_argument(
         "--output_dir", 
         type=str, 
-        default="./research_results", 
-        help="Directory to save results (default: ./research_results)"
+        default="research/conversion_experiments/results", 
+        help="Directory to save results (default: research/conversion_experiments/results)"
+    )
+    parser.add_argument(
+        "--plot_attention",
+        action="store_true",
+        help="Attempt to plot attention patterns (requires functional attention extraction in BSBR model, default: False)"
     )
     
     return parser.parse_args()
@@ -376,8 +387,9 @@ def main():
         all_metrics.append(metrics)
         # ##################### END MODEL OUTPUT EXTRACTION #####################
         
-        # Generate attention visualizations for a subset of samples
-        if i < 5:  # Only do this for the first 5 samples to avoid too many plots
+        # Generate attention visualizations (conditionally)
+        if args.plot_attention and i < 5:  # Only plot if requested and for first few samples
+            print(f"Plotting attention for sample {i}... (Note: BSBR attention is a placeholder)")
             for layer_idx in [0, len(original_model.transformer.h) // 2, len(original_model.transformer.h) - 1]:
                 for head_idx in [0, 1]:
                     plot_attention_patterns(
@@ -405,12 +417,17 @@ def main():
         print(f"{metric}: {value:.4f} ± {std_metrics[metric]:.4f}")
     
     # Save metrics to file
-    with open(os.path.join(args.output_dir, "similarity_metrics.json"), "w") as f:
-        json.dump({
-            "average": avg_metrics,
-            "std_dev": std_metrics,
-            "all_samples": all_metrics
-        }, f, indent=2)
+    similarity_metrics_path = os.path.join(args.output_dir, "similarity_metrics.json")
+    try:
+        with open(similarity_metrics_path, "w") as f:
+            json.dump({
+                "average": avg_metrics,
+                "std_dev": std_metrics,
+                "all_samples": all_metrics
+            }, f, indent=2)
+        print(f"Saved similarity metrics to {similarity_metrics_path}")
+    except Exception as e:
+        print(f"Error saving similarity metrics to {similarity_metrics_path}: {e}")
     
     # Plot distribution of metrics
     plt.figure(figsize=(15, 5))
@@ -423,7 +440,10 @@ def main():
         plt.title(f"{metric}\nMean: {avg_metrics[metric]:.4f}")
     
     plt.tight_layout()
-    plt.savefig(os.path.join(args.output_dir, "metrics_distribution.png"))
+    metrics_dist_path = os.path.join(args.output_dir, "metrics_distribution.png")
+    plt.savefig(metrics_dist_path)
+    print(f"Saved metrics distribution plot to {metrics_dist_path}")
+    plt.close()
     
     # Compare next token predictions
     print("\nComparing next token predictions...")
@@ -463,8 +483,13 @@ def main():
         print(f"Top-{k}: {rate*100:.2f}%")
     
     # Save agreement rates
-    with open(os.path.join(args.output_dir, "agreement_rates.json"), "w") as f:
-        json.dump(agreement_rates, f, indent=2)
+    agreement_rates_path = os.path.join(args.output_dir, "agreement_rates.json")
+    try:
+        with open(agreement_rates_path, "w") as f:
+            json.dump(agreement_rates, f, indent=2)
+        print(f"Saved agreement rates to {agreement_rates_path}")
+    except Exception as e:
+        print(f"Error saving agreement rates to {agreement_rates_path}: {e}")
     
     # Plot agreement rates
     plt.figure(figsize=(8, 5))
@@ -477,7 +502,9 @@ def main():
     plt.title("Agreement Rate Between Original and BSBR Models")
     
     plt.tight_layout()
-    plt.savefig(os.path.join(args.output_dir, "agreement_rates.png"))
+    agreement_plot_path = os.path.join(args.output_dir, "agreement_rates.png")
+    plt.savefig(agreement_plot_path)
+    print(f"Saved agreement rates plot to {agreement_plot_path}")
     plt.close()
     
     print(f"\nAll results saved to {args.output_dir}")
