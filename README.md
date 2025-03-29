@@ -5,8 +5,7 @@
 [![PyPI version](https://badge.fury.io/py/bsbr.svg)](https://badge.fury.io/py/bsbr)
 [![Python Version](https://img.shields.io/pypi/pyversions/bsbr.svg)](https://pypi.org/project/bsbr/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Documentation Status](https://readthedocs.org/projects/bsbr/badge/?version=latest)](https://bsbr.readthedocs.io/en/latest/?badge=latest)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Documentation](https://github.com/JacobFV/bsbr/actions/workflows/docs.yml/badge.svg)](https://github.com/JacobFV/bsbr/actions/workflows/docs.yml)
 [![Tests](https://github.com/JacobFV/bsbr/actions/workflows/tests.yml/badge.svg)](https://github.com/JacobFV/bsbr/actions/workflows/tests.yml)
 [![Coverage Status](https://coveralls.io/repos/github/JacobFV/bsbr/badge.svg?branch=main)](https://coveralls.io/github/JacobFV/bsbr?branch=main)
 

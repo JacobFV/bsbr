@@ -171,6 +171,6 @@ analysis = analyze_results(results)
 
 ## Next Steps
 
-1. Explore the [User Guide](user-guide/core-concepts.md) for detailed explanations
-2. Check out [Examples](examples/basic-usage.md) for more use cases
-3. Read the [API Reference](api/models.md) for complete documentation 
+1. Explore the [User Guide](../user-guide/core-concepts.md) for detailed explanations
+2. Check out [Examples](../examples/basic_usage.md) for more use cases
+3. Read the [API Reference](../api/bsbr.md) for complete documentation 

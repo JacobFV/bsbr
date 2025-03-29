@@ -162,6 +162,6 @@ Recommended configurations for different use cases:
 
 ## Next Steps
 
-1. Learn about the [BSBR Model](bsbr-model.md) implementation details
-2. Explore [Additional Models](additional-models.md) for comparison
-3. See [Evaluation](evaluation.md) results and benchmarks 
+1. Check the [API Reference](../api/bsbr.md) for detailed documentation
+2. Explore [Examples](../examples/basic_usage.md) for usage examples
+3. See [Research](../research/benchmarks.md) for benchmark results 

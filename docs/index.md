@@ -3,8 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/bsbr.svg)](https://badge.fury.io/py/bsbr)
 [![Python Version](https://img.shields.io/pypi/pyversions/bsbr.svg)](https://pypi.org/project/bsbr/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Documentation Status](https://readthedocs.org/projects/bsbr/badge/?version=latest)](https://bsbr.readthedocs.io/en/latest/?badge=latest)
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Documentation](https://github.com/JacobFV/bsbr/actions/workflows/docs.yml/badge.svg)](https://github.com/JacobFV/bsbr/actions/workflows/docs.yml)
 [![Tests](https://github.com/JacobFV/bsbr/actions/workflows/tests.yml/badge.svg)](https://github.com/JacobFV/bsbr/actions/workflows/tests.yml)
 [![Coverage Status](https://coveralls.io/repos/github/JacobFV/bsbr/badge.svg?branch=main)](https://coveralls.io/github/JacobFV/bsbr?branch=main)
 
@@ -58,17 +57,17 @@ pip install "bsbr[extras]"
 
 - [Getting Started](getting-started/installation.md)
 - [User Guide](user-guide/core-concepts.md)
-- [API Reference](api/models.md)
-- [Examples](examples/basic-usage.md)
-- [Research](research/paper.md)
+- [API Reference](api/bsbr.md)
+- [Examples](examples/basic_usage.md)
+- [Research](research/background.md)
 
 ## Research
 
-BSBR is based on research presented in our paper [*BSBR: Block Sparse Attention with Block Retrieval for Efficient Long-Context Reasoning*](research/paper.md). The implementation is inspired by Shengding Hu's blog post [*Streaming models for efficient long-context reasoning*](https://shengdinghu.github.io/blogs/streaming_model/).
+BSBR is based on research presented in our paper [*BSBR: Block Sparse Attention with Block Retrieval for Efficient Long-Context Reasoning*](research/background.md). The implementation is inspired by Shengding Hu's blog post [*Streaming models for efficient long-context reasoning*](https://shengdinghu.github.io/blogs/streaming_model/).
 
 ## Contributing
 
-We welcome contributions! Please see our [Contributing Guidelines](contributing/guidelines.md) for details.
+We welcome contributions! Please see our [Contributing Guidelines](https://github.com/JacobFV/bsbr/blob/main/CONTRIBUTING.md) for details.
 
 ## License
 

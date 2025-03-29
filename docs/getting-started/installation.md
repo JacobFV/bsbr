@@ -98,5 +98,5 @@ If you encounter issues:
 After installation, you can:
 
 1. Try the [Quick Start Guide](quickstart.md)
-2. Explore the [Examples](examples/basic-usage.md)
-3. Read the [User Guide](user-guide/core-concepts.md) 
+2. Explore the [Examples](../examples/basic_usage.md)
+3. Read the [User Guide](../user-guide/core-concepts.md) 
