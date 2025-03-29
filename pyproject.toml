@@ -28,6 +28,9 @@ extras = [
     "torch>=2.6.0",
     "transformers>=4.36.0",
     "accelerate>=0.25.0",
+    "scipy>=1.15.2",
+    "scikit-learn>=1.6.1",
+    "datasets>=3.5.0",
 ]
 docs = [
     "mkdocs>=1.5.3",
