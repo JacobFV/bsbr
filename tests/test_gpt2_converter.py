@@ -3,7 +3,7 @@ import torch
 import numpy as np
 from transformers import GPT2Model, GPT2Config
 
-from bsbr_extras.converter import TransformerToBSBRConverter, convert_to_bsbr
+from bsbr_transformers.converter import TransformerToBSBRConverter, convert_to_bsbr
 
 
 @pytest.fixture
