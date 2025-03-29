@@ -1,3 +1,5 @@
+![](bsbr_repo_cover.png)
+
 # BSBR: Block Sparse Attention with Block Retrieval
 
 A PyTorch implementation of Block Sparse Attention with Block Retrieval (BSBR), a novel attention mechanism for efficient processing of long sequences.
@@ -10,6 +12,18 @@ A PyTorch implementation of Block Sparse Attention with Block Retrieval (BSBR), 
 - Configurable chunk size
 - Optional state compression
 - Memory efficient with linear complexity in sequence length
+
+## Implemented Transformer Architectures
+
+The repository includes implementations of several efficient transformer architectures:
+
+1. **BSBR (Block Sparse with Block Retrieval)**: Our core implementation with chunk-based attention and efficient block retrieval
+2. **Standard Transformer**: The classic self-attention mechanism with O(n²) complexity
+3. **Linear Transformer**: Removes softmax for O(n) complexity using associative property of matrix multiplication
+4. **DeltaNet**: Enhanced Linear Transformer with a removal component for better memory management
+5. **Sliding Window Transformer**: Restricts attention to a fixed window size for O(n·w) complexity
+6. **Hopfield Network**: Memory-based attention inspired by modern Hopfield Networks
+7. **GAU (Gated Attention Unit)**: Chunk-based parallel attention with gating mechanisms
 
 ## Installation
 
@@ -55,18 +69,45 @@ outputs = model(input_ids, attention_mask)
 
 ## Components
 
+### Core Model
+
 - **BSBRAttention**: The core attention mechanism
 - **BSBRLayer**: A complete transformer layer with BSBR attention and feed-forward network
 - **BSBRModel**: A full model with embedding, multiple BSBR layers, and normalization
 
 ### Additional Models (Extras)
 
-For evaluation and research purposes, we also include:
+For evaluation and research purposes, we also include several alternative attention architectures:
 
-- **LinearTransformer**: Linear complexity transformer using a reformulated attention mechanism
-- **DeltaNet**: Enhanced linear transformer with a removal component for better memory management
+- **Standard Transformer**: Classic transformer with full attention (baseline)
+- **Linear Transformer**: Linear complexity transformer using a reformulated attention mechanism
+- **DeltaNet**: Enhanced linear transformer with a removal component 
+- **Sliding Window Transformer**: Efficient attention with a fixed context window
+- **Hopfield Network**: Associative memory-based attention for pattern completion
+- **GAU**: Gated Attention Unit with chunk-based parallelism
 
 These additional models are available in the `bsbr_extras` package and can be installed with the `extras` option.
+
+## Evaluation
+
+The repository includes tools to evaluate and compare different architectures:
+
+```bash
+# Run comparison of all models
+python evals/compare_models.py --seq_lengths 64 128 256 512 1024
+
+# Compare specific models
+python evals/compare_models.py --models BSBR Linear Hopfield GAU
+
+# Analyze results
+python evals/analyze_results.py --use_example_data
+```
+
+Evaluations include:
+- Inference time
+- Memory usage
+- Parameter counts
+- Computational complexity analysis
 
 ## Algorithm
 
@@ -91,4 +132,4 @@ Where:
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
