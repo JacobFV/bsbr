@@ -1,0 +1,70 @@
+% main.tex
+\documentclass[12pt]{article}
+
+% Packages
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{cleveref}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{subcaption}
+\usepackage{float}
+
+% Bibliography
+\usepackage[style=ieee]{biblatex}
+\addbibresource{references.bib}
+
+% Document info
+\title{BSBR: Block Sparse Attention with Block Retrieval for Efficient Long-Context Reasoning}
+\author{Jacob F. V.}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+We present BSBR (Block Sparse Attention with Block Retrieval), a novel attention mechanism that efficiently processes long sequences by combining standard attention within chunks and block retrieval between chunks. Our approach achieves near-linear complexity in sequence length while maintaining high model expressivity. Through comprehensive empirical evaluation against six baseline architectures, we demonstrate that BSBR significantly outperforms existing approaches in inference time while providing a well-balanced trade-off between efficiency and expressiveness.
+\end{abstract}
+
+\section{Introduction}
+\label{sec:introduction}
+
+The capacity to reason over long contexts represents one of the most significant bottlenecks in current large language model architectures. Standard transformer attention mechanisms \cite{vaswani2017attention} scale quadratically with sequence length, imposing prohibitive computational and memory constraints as context windows expand. This paper presents BSBR, an efficient attention mechanism designed to overcome these limitations.
+
+\section{Related Work}
+\label{sec:related_work}
+
+\subsection{Standard Transformer}
+\subsection{Linear Attention Mechanisms}
+\subsection{Chunk-Based Approaches}
+\subsection{Memory-Efficient Transformers}
+
+\section{Methodology}
+\label{sec:methodology}
+
+\subsection{BSBR Architecture}
+\subsection{Implementation Details}
+\subsection{Evaluation Framework}
+
+\section{Results}
+\label{sec:results}
+
+\subsection{Computational Complexity}
+\subsection{Memory Usage}
+\subsection{Model Expressivity}
+\subsection{Comparative Analysis}
+
+\section{Discussion}
+\label{sec:discussion}
+
+\section{Conclusion}
+\label{sec:conclusion}
+
+\printbibliography
+
+\end{document} 
