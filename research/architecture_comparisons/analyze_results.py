@@ -112,76 +112,110 @@ def estimate_complexity(seq_lengths: List[int], times: List[float]) -> Tuple[str
     return complexity, r_squared
 
 
-def analyze_results(seq_lengths: List[int], time_results: Dict[str, List[float]], memory_results: Dict[str, List[float]], args):
+def analyze_results(seq_lengths: List[int], time_results: Dict[str, Dict[str, float]], memory_results: Dict[str, Dict[str, float]], args):
     """
     Analyze the performance results of different models.
     
     Args:
-        seq_lengths: List of sequence lengths
-        time_results: Dictionary mapping model names to lists of inference times
-        memory_results: Dictionary mapping model names to lists of memory usage
+        seq_lengths: List of sequence lengths (as integers)
+        time_results: Dictionary mapping model names to dicts of {seq_len_str: time}
+        memory_results: Dictionary mapping model names to dicts of {seq_len_str: memory}
         args: ArgumentParser object
     """
     print("\n===== COMPLEXITY ANALYSIS =====")
     
     results = []
-    for model_name, times in time_results.items():
-        complexity, r_squared = estimate_complexity(seq_lengths, times)
+    processed_time_results = {}
+    processed_memory_results = {}
+
+    for model_name, model_time_data in time_results.items():
+        # Ensure seq_lengths are treated as strings for dict lookup, then sort by integer value
+        # Convert times from the dict into a list ordered by seq_lengths
+        try:
+            ordered_times = [model_time_data[str(sl)] for sl in seq_lengths]
+        except KeyError as e:
+            print(f"Warning: Missing time data for sequence length {e} in model {model_name}. Skipping complexity analysis for this model.")
+            continue
+            
+        processed_time_results[model_name] = ordered_times
+        complexity, r_squared = estimate_complexity(seq_lengths, ordered_times)
+        
+        # Extract ordered memory results similarly
+        try:
+            model_memory_data = memory_results[model_name]
+            ordered_memory = [model_memory_data[str(sl)] for sl in seq_lengths]
+            processed_memory_results[model_name] = ordered_memory
+            memory_at_max_n = ordered_memory[-1]
+        except KeyError as e:
+            print(f"Warning: Missing memory data for sequence length {e} in model {model_name}. Memory info will be incomplete.")
+            processed_memory_results[model_name] = [0] * len(seq_lengths) # Placeholder
+            memory_at_max_n = "N/A"
+            
         results.append({
             "Model": model_name,
             "Complexity": complexity,
             "R-squared": f"{r_squared:.4f}",
-            f"Time at n={seq_lengths[-1]}": f"{times[-1]:.4f}s",
-            f"Memory at n={seq_lengths[-1]}": f"{memory_results[model_name][-1]:.2f} MB"
+            f"Time at n={seq_lengths[-1]}": f"{ordered_times[-1]:.4f}s",
+            f"Memory at n={seq_lengths[-1]}": f"{memory_at_max_n:.2f} MB" if isinstance(memory_at_max_n, float) else memory_at_max_n
         })
     
     # Convert to pandas DataFrame for nice display
     df = pd.DataFrame(results)
     print(df.to_string(index=False))
     
-    # Calculate relative performance
+    # Calculate relative performance using processed results
     print("\n===== RELATIVE PERFORMANCE =====")
     
+    # Check if any models were processed
+    if not processed_time_results:
+        print("No models had complete time data for relative performance analysis.")
+        return
+        
     # Find the fastest model for the largest sequence length
-    max_seq_idx = -1  # Last item is the largest sequence length
-    fastest_model = min(time_results.items(), key=lambda x: x[1][max_seq_idx])[0]
-    baseline_times = time_results[fastest_model]
+    max_seq_idx = -1
+    # Use processed_time_results which contains lists
+    fastest_model = min(processed_time_results.items(), key=lambda x: x[1][max_seq_idx])[0]
+    baseline_times = processed_time_results[fastest_model]
     
     # Find model with best memory efficiency
-    most_memory_efficient = min(memory_results.items(), key=lambda x: x[1][max_seq_idx])[0]
-    
+    if processed_memory_results:
+        most_memory_efficient = min(processed_memory_results.items(), key=lambda x: x[1][max_seq_idx])[0]
+        print(f"Most memory efficient model at sequence length {seq_lengths[-1]}: {most_memory_efficient}")
+    else:
+        print("Memory efficiency comparison skipped due to missing data.")
+
     print(f"Fastest model at sequence length {seq_lengths[-1]}: {fastest_model}")
-    print(f"Most memory efficient model at sequence length {seq_lengths[-1]}: {most_memory_efficient}")
     print()
     
     rel_results = []
-    for model_name, times in time_results.items():
+    for model_name, ordered_times in processed_time_results.items():
         if model_name != fastest_model:
             # Calculate relative performance compared to the fastest model
-            slowdowns = [model_time / baseline_time for baseline_time, model_time in zip(baseline_times, times)]
+            slowdowns = [model_time / baseline_time for baseline_time, model_time in zip(baseline_times, ordered_times)]
             rel_results.append({
                 "Model": model_name,
                 f"Avg Slowdown vs {fastest_model}": f"{np.mean(slowdowns):.2f}x",
                 "Min Slowdown": f"{min(slowdowns):.2f}x",
                 "Max Slowdown": f"{max(slowdowns):.2f}x",
-                f"Slowdown at n={seq_lengths[-1]}": f"{times[-1] / baseline_times[-1]:.2f}x"
+                f"Slowdown at n={seq_lengths[-1]}": f"{ordered_times[-1] / baseline_times[-1]:.2f}x"
             })
             
     # Convert to pandas DataFrame for nice display
-    rel_df = pd.DataFrame(rel_results)
-    print(rel_df.to_string(index=False))
+    if rel_results:
+        rel_df = pd.DataFrame(rel_results)
+        print(rel_df.to_string(index=False))
     
-    # Create complexity plot
-    plt_complexity = plot_complexity_curves(seq_lengths, time_results, "Inference Time vs Sequence Length")
+    # Create complexity plot using processed lists
+    plt_complexity = plot_complexity_curves(seq_lengths, processed_time_results, "Inference Time vs Sequence Length")
     complexity_plot_path = os.path.join(args.output_dir, "complexity_analysis.png")
     plt_complexity.savefig(complexity_plot_path)
     print(f"\nSaved complexity plot to {complexity_plot_path}")
     plt.close(plt_complexity.gcf()) # Close the plot figure
 
-    # Create log-log plot
+    # Create log-log plot using processed lists
     plt.figure(figsize=(12, 8))
-    for model_name, times in time_results.items():
-        plt.loglog(seq_lengths, times, marker='o', label=model_name)
+    for model_name, ordered_times in processed_time_results.items():
+        plt.loglog(seq_lengths, ordered_times, marker='o', label=model_name)
     
     plt.xlabel("Sequence Length (log scale)")
     plt.ylabel("Time (seconds, log scale)")

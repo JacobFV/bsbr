@@ -1,114 +1,114 @@
 {
   "average": {
-    "cosine_similarity": -0.06309819351881743,
-    "mse": 53.19000301361084,
-    "kl_divergence": 17.59331720471382
+    "cosine_similarity": -0.002501694858074188,
+    "mse": 50.51742954254151,
+    "kl_divergence": 17.142407965660095
   },
   "std_dev": {
-    "cosine_similarity": 0.32721813623016255,
-    "mse": 11.104567623223199,
-    "kl_divergence": 6.586060190922557
+    "cosine_similarity": 0.27364643080854073,
+    "mse": 10.464528827309769,
+    "kl_divergence": 4.862731154188661
   },
   "all_samples": [
     {
-      "cosine_similarity": 0.5596562623977661,
-      "mse": 33.70235061645508,
-      "kl_divergence": 5.480225563049316
+      "cosine_similarity": -0.5931016802787781,
+      "mse": 73.85419464111328,
+      "kl_divergence": 22.464319229125977
     },
     {
-      "cosine_similarity": -0.013052590191364288,
-      "mse": 56.84126663208008,
-      "kl_divergence": 11.706506729125977
+      "cosine_similarity": -0.20919062197208405,
+      "mse": 56.26993942260742,
+      "kl_divergence": 16.80446434020996
     },
     {
-      "cosine_similarity": -0.06830081343650818,
-      "mse": 49.47611618041992,
-      "kl_divergence": 22.528717041015625
+      "cosine_similarity": -0.208266943693161,
+      "mse": 59.5332145690918,
+      "kl_divergence": 23.025524139404297
     },
     {
-      "cosine_similarity": -0.2578805983066559,
-      "mse": 56.78865051269531,
-      "kl_divergence": 20.85678482055664
+      "cosine_similarity": 0.21930238604545593,
+      "mse": 39.24417495727539,
+      "kl_divergence": 13.070841789245605
     },
     {
-      "cosine_similarity": -0.27676746249198914,
-      "mse": 56.24215316772461,
-      "kl_divergence": 22.661048889160156
+      "cosine_similarity": 0.2727428674697876,
+      "mse": 42.41274642944336,
+      "kl_divergence": 13.060907363891602
     },
     {
-      "cosine_similarity": -0.3845579922199249,
-      "mse": 65.47673797607422,
-      "kl_divergence": 22.7995548248291
+      "cosine_similarity": 0.3955272138118744,
+      "mse": 39.972496032714844,
+      "kl_divergence": 6.271913051605225
     },
     {
-      "cosine_similarity": -0.03578140214085579,
-      "mse": 54.23432540893555,
-      "kl_divergence": 19.765453338623047
+      "cosine_similarity": -0.355032354593277,
+      "mse": 57.192169189453125,
+      "kl_divergence": 23.018402099609375
     },
     {
-      "cosine_similarity": -0.19371840357780457,
-      "mse": 55.553157806396484,
-      "kl_divergence": 17.439620971679688
+      "cosine_similarity": 0.16438665986061096,
+      "mse": 40.33502197265625,
+      "kl_divergence": 14.342755317687988
     },
     {
-      "cosine_similarity": -0.46967852115631104,
-      "mse": 62.43910217285156,
-      "kl_divergence": 22.993730545043945
+      "cosine_similarity": 0.466823011636734,
+      "mse": 35.7897834777832,
+      "kl_divergence": 12.625442504882812
     },
     {
-      "cosine_similarity": 0.5443259477615356,
-      "mse": 36.07680130004883,
-      "kl_divergence": 1.0502897500991821
+      "cosine_similarity": 0.00163288414478302,
+      "mse": 47.66130065917969,
+      "kl_divergence": 13.925931930541992
     },
     {
-      "cosine_similarity": 0.010940123349428177,
-      "mse": 50.341556549072266,
-      "kl_divergence": 16.851951599121094
-    },
-    {
-      "cosine_similarity": -0.19704408943653107,
-      "mse": 52.81961441040039,
-      "kl_divergence": 22.84799575805664
-    },
-    {
-      "cosine_similarity": -0.30122697353363037,
-      "mse": 64.69429016113281,
-      "kl_divergence": 22.67015838623047
-    },
-    {
-      "cosine_similarity": -0.4480946958065033,
-      "mse": 76.7109375,
-      "kl_divergence": 17.52263832092285
-    },
-    {
-      "cosine_similarity": 0.6000182032585144,
-      "mse": 32.66811752319336,
-      "kl_divergence": 6.470099449157715
-    },
-    {
-      "cosine_similarity": -0.290519118309021,
-      "mse": 62.30388259887695,
-      "kl_divergence": 20.021879196166992
-    },
-    {
-      "cosine_similarity": 0.37105169892311096,
-      "mse": 38.855709075927734,
-      "kl_divergence": 11.406926155090332
-    },
-    {
-      "cosine_similarity": 0.02178375795483589,
-      "mse": 47.88826370239258,
-      "kl_divergence": 23.025850296020508
-    },
-    {
-      "cosine_similarity": -0.05926414579153061,
-      "mse": 49.860687255859375,
-      "kl_divergence": 20.741064071655273
-    },
-    {
-      "cosine_similarity": -0.37385305762290955,
-      "mse": 60.82633972167969,
+      "cosine_similarity": -0.39152684807777405,
+      "mse": 64.40921020507812,
       "kl_divergence": 23.025848388671875
+    },
+    {
+      "cosine_similarity": 0.1462578922510147,
+      "mse": 47.81502914428711,
+      "kl_divergence": 19.334068298339844
+    },
+    {
+      "cosine_similarity": -0.21480560302734375,
+      "mse": 57.7509651184082,
+      "kl_divergence": 21.159467697143555
+    },
+    {
+      "cosine_similarity": -0.2672685980796814,
+      "mse": 53.78066635131836,
+      "kl_divergence": 23.02566146850586
+    },
+    {
+      "cosine_similarity": 0.0073382556438446045,
+      "mse": 48.23287582397461,
+      "kl_divergence": 12.477617263793945
+    },
+    {
+      "cosine_similarity": 0.0265265554189682,
+      "mse": 44.658294677734375,
+      "kl_divergence": 17.114818572998047
+    },
+    {
+      "cosine_similarity": 0.3106200397014618,
+      "mse": 39.13106918334961,
+      "kl_divergence": 10.315847396850586
+    },
+    {
+      "cosine_similarity": 0.006258949637413025,
+      "mse": 69.47749328613281,
+      "kl_divergence": 22.051494598388672
+    },
+    {
+      "cosine_similarity": 0.13413093984127045,
+      "mse": 42.6544075012207,
+      "kl_divergence": 16.950199127197266
+    },
+    {
+      "cosine_similarity": 0.03761109709739685,
+      "mse": 50.17353820800781,
+      "kl_divergence": 18.782634735107422
     }
   ]
 }

@@ -1,0 +1,11 @@
+{
+  "config": {
+    "model_name": "gpt2",
+    "chunk_size": 128,
+    "dataset_name": "wikitext",
+    "device": "cpu"
+  },
+  "original_perplexity": 52.29481506347656,
+  "bsbr_perplexity": 2073936.5,
+  "perplexity_difference_percent": 3965754.9274581266
+}

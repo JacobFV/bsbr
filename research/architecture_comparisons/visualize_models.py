@@ -18,7 +18,7 @@ plt.rcParams["font.size"] = 12
 
 def plot_inference_heatmap(time_results, seq_lengths, output_path=None):
     """Create a heatmap showing normalized inference times across models and sequence lengths"""
-    # Create DataFrame from time_results
+    # Create DataFrame from time_results (which should now be list-based)
     df = pd.DataFrame(time_results, index=seq_lengths)
     
     # Normalize each row (sequence length) to show relative performance
@@ -52,7 +52,7 @@ def plot_radar_chart(time_results, memory_results, param_counts, seq_lengths, ou
     # Select the last sequence length for comparison
     final_idx = -1
     
-    # Prepare data
+    # Prepare data (time_results and memory_results are dicts of {model: list_of_values})
     models = list(time_results.keys())
     metrics = ['Inference Speed', 'Memory Efficiency', 'Parameter Efficiency', 'Scaling Behavior']
     
@@ -125,7 +125,7 @@ def plot_scaling_curves(time_results, seq_lengths, output_path=None):
     """Plot scaling behavior with theoretical curves for comparison"""
     plt.figure(figsize=(14, 8))
     
-    # Define theoretical curves
+    # Define theoretical curves (use processed time_results which are lists)
     x = np.array(seq_lengths)
     constant = np.ones_like(x) * time_results["BSBR"][0]
     linear = x * (time_results["Linear"][0] / x[0])
@@ -176,7 +176,7 @@ def plot_memory_scaling(memory_results, seq_lengths, output_path=None):
     
     formatter = FuncFormatter(format_mb)
     
-    # Plot actual data
+    # Plot actual data (memory_results should be dict of {model: list_of_values})
     markers = ['o', 's', '^', 'D', 'v', 'p', '*']
     colors = ["blue", "green", "red", "purple", "orange", "brown", "pink"]
     
@@ -209,7 +209,7 @@ def plot_combined_performance(time_results, memory_results, param_counts, seq_le
     # Use the largest sequence length for comparison
     seq_idx = -1
     
-    # Extract data for the plot
+    # Extract data for the plot (use processed results which are lists)
     models = list(time_results.keys())
     x = [memory_results[model][seq_idx] for model in models]  # Memory usage
     y = [time_results[model][seq_idx] for model in models]  # Inference time
@@ -325,40 +325,73 @@ def main():
         sys.exit(1)
 
     # Extract data
-    time_results = results_data.get("time_results")
-    memory_results = results_data.get("memory_results")
+    raw_time_results = results_data.get("time_results")
+    raw_memory_results = results_data.get("memory_results")
     param_counts = results_data.get("param_counts")
-    seq_lengths = results_data.get("seq_lengths")
+    seq_lengths = results_data.get("seq_lengths") # This should be a list of ints
 
-    if not all([time_results, memory_results, param_counts, seq_lengths]):
+    if not all([raw_time_results, raw_memory_results, param_counts, seq_lengths]):
         print("Error: Missing required data (time_results, memory_results, param_counts, seq_lengths) in the results file.")
         sys.exit(1)
 
-    # Generate selected plots
+    # Process raw results into lists ordered by seq_lengths
+    processed_time_results = {}
+    processed_memory_results = {}
+    valid_models = list(raw_time_results.keys())
+
+    for model_name in valid_models:
+        try:
+            # Convert time dict to ordered list
+            model_time_data = raw_time_results[model_name]
+            ordered_times = [model_time_data[str(sl)] for sl in seq_lengths]
+            processed_time_results[model_name] = ordered_times
+
+            # Convert memory dict to ordered list
+            model_memory_data = raw_memory_results[model_name]
+            ordered_memory = [model_memory_data[str(sl)] for sl in seq_lengths]
+            processed_memory_results[model_name] = ordered_memory
+
+        except KeyError as e:
+            print(f"Warning: Missing data for sequence length {e} in model {model_name}. Excluding model from visualizations.")
+            # Remove model from processed results if data is incomplete
+            if model_name in processed_time_results:
+                del processed_time_results[model_name]
+            if model_name in processed_memory_results:
+                del processed_memory_results[model_name]
+            if model_name in param_counts:
+                 del param_counts[model_name] # Also remove from params if excluding model
+            continue
+    
+    if not processed_time_results:
+        print("Error: No models have complete data for visualization.")
+        sys.exit(1)
+
+    # Generate selected plots using processed data
     print("\nGenerating plots...")
     
     if "heatmap" in args.plot_types:
-        plot_inference_heatmap(time_results, seq_lengths, 
+        plot_inference_heatmap(processed_time_results, seq_lengths, 
                                output_path=os.path.join(args.output_dir, "inference_heatmap.png"))
     
     if "radar" in args.plot_types:
-        plot_radar_chart(time_results, memory_results, param_counts, seq_lengths, 
+        plot_radar_chart(processed_time_results, processed_memory_results, param_counts, seq_lengths, 
                          output_path=os.path.join(args.output_dir, "radar_chart.png"))
     
     if "scaling" in args.plot_types:
-        plot_scaling_curves(time_results, seq_lengths, 
+        plot_scaling_curves(processed_time_results, seq_lengths, 
                               output_path=os.path.join(args.output_dir, "scaling_curves.png"))
         
     if "memory" in args.plot_types:
-        plot_memory_scaling(memory_results, seq_lengths, 
+        plot_memory_scaling(processed_memory_results, seq_lengths, 
                               output_path=os.path.join(args.output_dir, "memory_scaling.png"))
     
     if "combined" in args.plot_types:
-        plot_combined_performance(time_results, memory_results, param_counts, seq_lengths, 
+        plot_combined_performance(processed_time_results, processed_memory_results, param_counts, seq_lengths, 
                                   output_path=os.path.join(args.output_dir, "combined_performance.png"))
         
     if "dashboard" in args.plot_types:
-        plot_summary_dashboard(time_results, memory_results, param_counts, seq_lengths, 
+        # Dashboard calls the individual plot functions, ensure it gets processed data
+        plot_summary_dashboard(processed_time_results, processed_memory_results, param_counts, seq_lengths, 
                                output_dir=args.output_dir)
 
     print("\nVisualization complete.")
