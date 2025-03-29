@@ -64,6 +64,7 @@ nav:
   - API Reference:
     - BSBR Core: api/bsbr.md
     - BSBR Extras: api/bsbr_extras.md
+    - BSBR Transformers: api/bsbr_transformers.md
   - Examples:
     - Basic Usage: examples/basic_usage.md
     - Advanced Usage: examples/advanced_usage.md

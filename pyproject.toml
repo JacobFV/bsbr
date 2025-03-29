@@ -1,7 +1,7 @@
 [project]
 name = "bsbr"
 version = "0.1.2"
-description = "Block Sparse Attention with Block Retrieval - An efficient attention mechanism for long-context reasoning"
+description = "Block Sparse Attention with Block Retrieval (BSBR) and utilities for converting Transformer models."
 readme = "README.md"
 authors = [
     { name = "Jacob F. V.", email = "jacobfv123@gmail.com" }
@@ -26,11 +26,13 @@ extras = [
     "pytest>=8.3.5",
     "seaborn>=0.13.2",
     "torch>=2.6.0",
-    "transformers>=4.36.0",
     "accelerate>=0.25.0",
     "scipy>=1.15.2",
     "scikit-learn>=1.6.1",
     "datasets>=3.5.0",
+]
+transformers = [
+    "transformers>=4.36.0",
 ]
 docs = [
     "mkdocs>=1.5.3",

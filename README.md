@@ -19,6 +19,7 @@ A PyTorch implementation of Block Sparse Attention with Block Retrieval (BSBR), 
 - Configurable chunk size
 - Optional state compression
 - Memory efficient with linear complexity in sequence length
+- Utilities to convert standard HuggingFace Transformer models (like GPT-2) to BSBR format.
 
 Read our analysis of the BSBR compared against other models [here](https://github.com/JacobFV/bsbr/tree/main/blog.md)
 
@@ -38,14 +39,20 @@ The repository includes implementations of several efficient transformer archite
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/bsbr.git
+git clone https://github.com/JacobFV/bsbr.git
 cd bsbr
 
-# Install the core package
+# Install the core BSBR package
 pip install -e .
 
-# Install with extras for evaluations and research
+# Install with extra architectures (Standard, Linear, etc.) for evaluations
 pip install -e ".[extras]"
+
+# Install with transformer conversion utilities (requires transformers library)
+pip install -e ".[transformers]"
+
+# Install everything
+pip install -e ".[extras,transformers]"
 ```
 
 ## Usage
@@ -78,15 +85,17 @@ outputs = model(input_ids, attention_mask)
 
 ## Components
 
-### Core Model
+### Core Model (`bsbr` package)
 
 - **BSBRAttention**: The core attention mechanism
 - **BSBRLayer**: A complete transformer layer with BSBR attention and feed-forward network
 - **BSBRModel**: A full model with embedding, multiple BSBR layers, and normalization
 
-### Additional Models (Extras)
+### Additional Architectures (`bsbr_extras` package)
 
-For evaluation and research purposes, we also include several alternative attention architectures:
+Requires installing with `pip install -e ".[extras]"`.
+
+For evaluation and research purposes, we also include several alternative attention architectures in the `bsbr_extras` package:
 
 - **Standard Transformer**: Classic transformer with full attention (baseline)
 - **Linear Transformer**: Linear complexity transformer using a reformulated attention mechanism
@@ -95,7 +104,24 @@ For evaluation and research purposes, we also include several alternative attent
 - **Hopfield Network**: Associative memory-based attention for pattern completion
 - **GAU**: Gated Attention Unit with chunk-based parallelism
 
-These additional models are available in the `bsbr_extras` package and can be installed with the `extras` option.
+### Transformer Conversion Utilities (`bsbr_transformers` package)
+
+Requires installing with `pip install -e ".[transformers]"`.
+
+This package provides tools to convert pre-trained HuggingFace Transformer models to the BSBR format, allowing you to leverage existing weights with the BSBR architecture.
+
+- **`convert_to_bsbr`**: Function to convert a model (currently supports GPT-2).
+- **`TransformerToBSBRConverter`**: Class providing the conversion logic.
+
+Example:
+```python
+from bsbr_transformers import convert_to_bsbr
+
+# Convert a pre-trained GPT-2 model
+bsbr_gpt2_model = convert_to_bsbr("gpt2", chunk_size=128)
+
+# Now you can use bsbr_gpt2_model
+```
 
 ## Evaluation
 

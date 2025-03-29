@@ -1,15 +1,16 @@
-# BSBR Extras
+# BSBR Transformer Conversion Utilities (`bsbr_transformers`)
 
-This package contains additional transformer architectures for evaluation and research purposes, as well as utilities for converting pre-trained models to use Block Sparse Attention with Block Retrieval (BSBR).
+This package provides utilities for converting pre-trained HuggingFace Transformer models to use Block Sparse Attention with Block Retrieval (BSBR).
 
-## GPT-to-BSBR Converter
+## GPT-2 to BSBR Converter
 
 The converter allows you to transform pre-trained GPT-2 models into BSBR models, preserving their knowledge while making them more efficient for long-context processing.
 
 ### Basic Usage
 
 ```python
-from bsbr_extras import convert_to_bsbr
+import torch
+from bsbr_transformers import convert_to_bsbr
 
 # Convert a standard GPT-2 model to BSBR
 bsbr_model = convert_to_bsbr(
@@ -30,7 +31,7 @@ For more control, you can use the `TransformerToBSBRConverter` class directly:
 
 ```python
 from transformers import GPT2Model
-from bsbr_extras import TransformerToBSBRConverter
+from bsbr_transformers import TransformerToBSBRConverter
 
 # Load original model
 original_model = GPT2Model.from_pretrained("gpt2")
@@ -50,7 +51,7 @@ bsbr_model = converter.convert_gpt2_model_to_bsbr(original_model)
 We provide a script to compare the performance of the original model and the converted BSBR model:
 
 ```bash
-python -m bsbr_extras.convert_example --model_name gpt2 --chunk_size 128 --seq_len 1024
+python -m bsbr_transformers.convert_example --model_name gpt2 --chunk_size 128 --seq_len 1024
 ```
 
 Arguments:
@@ -61,7 +62,7 @@ Arguments:
 - `--output_dir`: Directory to save the converted model (default: "./converted_model")
 - `--save_model`: Flag to save the converted model
 
-## Benefits of BSBR
+## Benefits of Converting to BSBR
 
 BSBR provides several advantages over standard transformers:
 
@@ -70,9 +71,16 @@ BSBR provides several advantages over standard transformers:
 3. **Preserved Knowledge**: Retains the knowledge embedded in the pre-trained weights
 4. **Information Retention**: Maintains important context through chunk-level retrieval
 
-## Converting Additional Model Types
+## Supported & Planned Model Types
 
-Currently, the converter supports GPT-2 models. Support for additional model architectures will be added in future releases.
+- **Currently Supported:**
+  - GPT-2
+- **Planned:**
+  - LLaMA
+  - BERT
+  - T5
+
+Support for additional model architectures will be added in future releases.
 
 ## Mathematical Correspondence
 

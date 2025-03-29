@@ -15,7 +15,7 @@ from tqdm import tqdm
 import os
 import json
 
-from bsbr_transformers.converter import convert_to_bsbr
+from bsbr_transformers.gpt2_converter import convert_to_bsbr
 
 
 def parse_args():

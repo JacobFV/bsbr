@@ -19,7 +19,7 @@ from typing import Dict, List, Tuple, Optional
 from transformers import GPT2Tokenizer, GPT2LMHeadModel, AutoTokenizer
 from datasets import load_dataset
 
-from bsbr_transformers.converter import convert_to_bsbr
+from bsbr_transformers.gpt2_converter import convert_to_bsbr
 
 # Set plotting style
 sns.set_style("whitegrid")

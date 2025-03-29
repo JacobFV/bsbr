@@ -6,7 +6,7 @@ import time
 
 from transformers import GPT2LMHeadModel, GPT2Tokenizer, AutoTokenizer
 
-from bsbr_transformers.converter import convert_to_bsbr
+from bsbr_transformers.gpt2_converter import convert_to_bsbr
 
 
 def parse_args():
