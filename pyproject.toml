@@ -1,6 +1,6 @@
 [project]
 name = "bsbr"
-version = "0.1.1"
+version = "0.1.2"
 description = "Block Sparse Attention with Block Retrieval - An efficient attention mechanism for long-context reasoning"
 readme = "README.md"
 authors = [

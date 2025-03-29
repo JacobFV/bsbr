@@ -1,0 +1,19 @@
+{
+  "average": {
+    "cosine_similarity": -0.054368771612644196,
+    "mse": 52.23370361328125,
+    "kl_divergence": 21.098304748535156
+  },
+  "std_dev": {
+    "cosine_similarity": 0.0,
+    "mse": 0.0,
+    "kl_divergence": 0.0
+  },
+  "all_samples": [
+    {
+      "cosine_similarity": -0.054368771612644196,
+      "mse": 52.23370361328125,
+      "kl_divergence": 21.098304748535156
+    }
+  ]
+}

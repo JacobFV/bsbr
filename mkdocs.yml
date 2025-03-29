@@ -69,9 +69,12 @@ nav:
     - Advanced Usage: examples/advanced_usage.md
     - Research Examples: examples/research_examples.md
   - Research:
+    - Overview: research/index.md
     - Background: research/background.md
     - Benchmarks: research/benchmarks.md
     - Experiments: research/experiments.md
+    - Conversion Research: research/bsbr_conversion_research.md
+    - Conversion Evaluation: research/bsbr_conversion_evaluation.md
 
 plugins:
   - search
