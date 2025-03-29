@@ -11,6 +11,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
@@ -19,7 +21,9 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install -e ".[docs]"
-        pip install mkdocstrings[python]
     - name: Generate API documentation
       run: |
-         mkdocstrings --handlers python.simple --selection rule --docstring-style google --heading-level 2 --show-source --show-root-heading
+        # Create API documentation files
+        mkdir -p docs/api
+        # Generate API docs - using mkdocs build to handle everything
+        mkdocs build

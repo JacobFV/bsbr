@@ -40,40 +40,9 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.details
-  - pymdownx.superfences
-  - pymdownx.tabbed
-  - pymdownx.tasklist
-  - pymdownx.emoji
-  - pymdownx.arithmatex:
-      generic: true
-  - pymdownx.betterem:
-      smart_enable: all
-  - pymdownx.caret
-  - pymdownx.critic
-  - pymdownx.keys
-  - pymdownx.mark
-  - pymdownx.smartsymbols
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.tabbed:
-      alternate_style: true
-  - pymdownx.tasklist:
-      custom_checkbox: true
-  - pymdownx.tilde
-  - pymdownx.emoji:
-      emoji_index: !!python/name:materialx.emoji.twemoji
-      emoji_generator: !!python/name:materialx.emoji.to_svg
-  - pymdownx.details
-  - pymdownx.superfences
-  - pymdownx.tabbed
-  - pymdownx.tasklist
-  - pymdownx.emoji
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.betterem:
@@ -90,28 +59,19 @@ nav:
   - Getting Started:
     - Installation: getting-started/installation.md
     - Quick Start: getting-started/quickstart.md
-    - Configuration: getting-started/configuration.md
   - User Guide:
     - Core Concepts: user-guide/core-concepts.md
-    - BSBR Model: user-guide/bsbr-model.md
-    - Additional Models: user-guide/additional-models.md
-    - Evaluation: user-guide/evaluation.md
   - API Reference:
-    - Models: api/models.md
-    - Attention: api/attention.md
-    - Utils: api/utils.md
+    - BSBR Core: api/bsbr.md
+    - BSBR Extras: api/bsbr_extras.md
   - Examples:
-    - Basic Usage: examples/basic-usage.md
-    - Advanced Features: examples/advanced-features.md
-    - Custom Models: examples/custom-models.md
+    - Basic Usage: examples/basic_usage.md
+    - Advanced Usage: examples/advanced_usage.md
+    - Research Examples: examples/research_examples.md
   - Research:
-    - Paper: research/paper.md
+    - Background: research/background.md
     - Benchmarks: research/benchmarks.md
-    - Comparisons: research/comparisons.md
-  - Contributing:
-    - Guidelines: contributing/guidelines.md
-    - Development: contributing/development.md
-    - Testing: contributing/testing.md
+    - Experiments: research/experiments.md
 
 plugins:
   - search
@@ -120,5 +80,13 @@ plugins:
   - git-revision-date-localized:
       type: datetime
       fallback_to_build_date: true
-  - social-cards
-  - tags 
+  - tags
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          options:
+            docstring_style: google
+            show_source: true
+            heading_level: 2
+            show_root_heading: true 

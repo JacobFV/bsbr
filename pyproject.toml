@@ -42,6 +42,10 @@ docs = [
     "mkdocs-swagger-ui-tag>=0.0.7",
     "mkdocs-redirects>=1.2.1",
     "mkdocs-awesome-pages-plugin>=2.9.2",
+    "mkdocstrings>=0.29.0",
+    "mkdocstrings-python>=1.16.8",
+    "mkdocs-autorefs>=1.4.1",
+    "griffe>=1.7.0",
 ]
 
 [build-system]
