@@ -10,174 +10,124 @@ This directory contains scripts for evaluating different efficient transformer a
 6. **Hopfield Network** - Associative memory-based attention inspired by modern Hopfield Networks
 7. **GAU (Gated Attention Unit)** - Uses chunk-based parallelism with gating for efficient processing
 
-## Evaluation Results
+The evaluation consists of three main scripts:
+*   `compare_models.py`: Runs benchmarks to compare inference time and memory usage across different sequence lengths. Saves raw results to `results/comparison_results.json` and a basic plot to `results/model_comparison.png`.
+*   `analyze_results.py`: Loads the raw results from `comparison_results.json`, performs complexity and relative performance analysis, and saves analysis plots (`complexity_analysis.png`, `complexity_loglog.png`) to the `results/` directory.
+*   `visualize_models.py`: Loads the raw results and generates various visualizations (heatmap, radar chart, scaling curves, memory scaling, combined performance) saved to the `results/` directory.
+
+## Evaluation Results (Latest Run)
+
+Based on empirical testing with sequence lengths up to 1024 tokens on a CPU device.
 
 ### Computational Complexity
 
-Based on our empirical testing with sequence lengths up to 1024 tokens:
+| Model         | Empirical Complexity | R-squared | Time at n=1024 (seconds) | Memory at n=1024 (MB) |
+|---------------|----------------------|-----------|--------------------------|----------------------|
+| BSBR          | O(n^0.70) ≈ O(n)     | 0.9380    | 3.0916                   | 22.83                |
+| Standard      | O(n^0.81) ≈ O(n)     | 0.9212    | 2.5382                   | 13.80                |
+| Linear        | O(n^0.86) ≈ O(n)     | 0.9988    | 17.3223                  | 13.80                |
+| DeltaNet      | O(n^0.88) ≈ O(n)     | 0.9956    | 92.2763                  | 13.80                |
+| SlidingWindow | O(n^0.86) ≈ O(n)     | 0.9804    | 5.5680                   | 13.80                |
+| Hopfield      | O(n^0.80) ≈ O(n)     | 0.9308    | 2.5681                   | 13.80                |
+| GAU           | O(n^1.30) ≈ O(n log n)| 0.9826    | 17.6486                  | 16.81                |
 
-| Model | Empirical Complexity | R-squared | Time at n=1024 (seconds) | Memory (MB) |
-|-------|----------------------|-----------|--------------------------|-------------|
-| BSBR | O(n^0.81) ≈ O(n) | 0.8473 | 0.428 | 7.67 |
-| Standard | O(n^1.45) ≈ O(n log n) | 0.9644 | 3.285 | 23.92 |
-| Linear | O(n^0.79) ≈ O(n) | 0.9821 | 1.862 | 6.41 |
-| DeltaNet | O(n^0.73) ≈ O(n) | 0.9516 | 9.960 | 6.41 |
-| SlidingWindow | O(n^1.21) ≈ O(n log n) | 0.9679 | 1.834 | 12.65 |
-| Hopfield | O(n^0.78) ≈ O(n) | 0.9809 | 2.143 | 6.68 |
-| GAU | O(n^0.86) ≈ O(n) | 0.9815 | 1.528 | 8.12 |
+*Note: The empirical complexity for the Standard Transformer is lower than expected (O(n^0.81) vs O(n^2) theoretical) in this CPU run, potentially due to overhead dominating at these scales or implementation details.*
 
-### Relative Performance
+### Relative Performance (vs Standard Transformer @ n=1024)
 
-BSBR significantly outperforms other models in inference time:
+Standard Transformer was the fastest model in this run at n=1024.
 
-| Model | Avg Slowdown vs BSBR | Min Slowdown | Max Slowdown | Slowdown at n=1024 |
-|-------|----------------------|--------------|--------------|-------------------|
-| Linear | 6.19x | 4.35x | 8.45x | 4.35x |
-| DeltaNet | 31.17x | 23.27x | 40.79x | 23.27x |
-| Standard | 4.51x | 1.30x | 7.68x | 7.68x |
-| SlidingWindow | 4.34x | 3.21x | 5.90x | 4.29x |
-| Hopfield | 7.17x | 5.01x | 9.79x | 5.01x |
-| GAU | 4.34x | 3.21x | 5.90x | 3.57x |
+| Model         | Avg Slowdown vs Standard | Min Slowdown | Max Slowdown | Slowdown at n=1024 |
+|---------------|--------------------------|--------------|--------------|-------------------|
+| BSBR          | 1.62x                    | 1.22x        | 1.82x        | 1.22x             |
+| SlidingWindow | 2.40x                    | 2.02x        | 2.84x        | 2.19x             |
+| Hopfield      | 1.04x                    | 1.00x        | 1.09x        | 1.01x             |
+| GAU           | 4.35x                    | 1.92x        | 6.95x        | 6.95x             |
+| Linear        | N/A                      | N/A          | N/A          | N/A               |
+| DeltaNet      | N/A                      | N/A          | N/A          | N/A               |
+
+*Note: Linear and DeltaNet were excluded from the relative performance calculation in `analyze_results.py` due to potentially incomplete data in the specific run producing these results.*
 
 ### Memory Usage
 
-Memory usage varies significantly across architectures, especially at longer sequence lengths:
+| Model         | Memory at n=1024 (MB) | Scaling Trend |
+|---------------|----------------------|---------------|
+| BSBR          | 22.83                | Minimal       |
+| Standard      | 13.80                | Minimal       |
+| Linear        | 13.80                | Minimal       |
+| DeltaNet      | 13.80                | Minimal       |
+| SlidingWindow | 13.80                | Minimal       |
+| Hopfield      | 13.80                | Minimal       |
+| GAU           | 16.81                | Minimal       |
 
-| Model | Fixed Memory Cost | Scaling with n | Memory at n=1024 (MB) |
-|-------|------------------|----------------|----------------------|
-| BSBR | Higher | Minimal | 7.67 |
-| Standard | Low | O(n²) | 23.92 |
-| Linear | Low | Minimal | 6.41 |
-| DeltaNet | Low | Minimal | 6.41 |
-| SlidingWindow | Low | O(n·w) | 12.65 |
-| Hopfield | Low | Minimal | 6.68 |
-| GAU | Medium | O(n·log n) | 8.12 |
+*Note: Memory scaling appears minimal for most models in this CPU run. GPU runs would likely show more pronounced differences, especially for the Standard Transformer.*
 
 ### Parameter Counts
 
-Models with additional components or projections tend to have higher parameter counts:
+| Model         | Parameters (Millions) | Relative to Base (Standard) |
+|---------------|----------------------|-----------------------------|
+| BSBR          | 6.0M                 | 1.66x                       |
+| Standard      | 3.6M                 | 1.0x                        |
+| Linear        | 3.6M                 | 1.0x                        |
+| DeltaNet      | 3.6M                 | 1.0x                        |
+| SlidingWindow | 3.6M                 | 1.0x                        |
+| Hopfield      | 3.6M                 | 1.0x                        |
+| GAU           | 4.4M                 | 1.22x                       |
 
-| Model | Parameters (Millions) | Relative to Base |
-|-------|----------------------|------------------|
-| BSBR | 6.0M | 1.7x |
-| Standard | 3.6M | 1.0x |
-| Linear | 3.6M | 1.0x |
-| DeltaNet | 3.6M | 1.0x |
-| SlidingWindow | 3.6M | 1.0x |
-| Hopfield | 3.6M | 1.0x |
-| GAU | 4.4M | 1.2x |
-
-## Architecture Analysis
-
-### BSBR (Block Sparse with Block Retrieval)
-- **Complexity**: O(n) empirical, theoretically O(n + n²/B)
-- **Strengths**: 
-  - Fastest inference time overall
-  - Well-balanced between efficiency and expressiveness
-  - Effective compression of long-range information
-- **Weaknesses**: 
-  - Higher parameter count
-  - Slightly higher memory baseline
-
-### Standard Transformer
-- **Complexity**: O(n²) theoretical, O(n·log n) empirical in our tests
-- **Strengths**: 
-  - Full context visibility
-  - Maximum expressiveness
-  - Well-established architecture
-- **Weaknesses**: 
-  - Memory usage grows quadratically with sequence length
-  - Computation becomes prohibitive for long sequences
-
-### Linear Transformer
-- **Complexity**: O(n) theoretical and empirical
-- **Strengths**: 
-  - True linear scaling
-  - Low memory usage
-  - Stateful representation
-- **Weaknesses**: 
-  - Less expressive than models with softmax
-  - Performance gap compared to BSBR
-
-### DeltaNet
-- **Complexity**: O(n) theoretical and empirical
-- **Strengths**: 
-  - Improved memory management over Linear Transformer
-  - Better handling of long-term dependencies
-- **Weaknesses**: 
-  - Highest computational overhead
-  - Slowest inference time
-  - Complex update rule
-
-### Sliding Window Transformer
-- **Complexity**: O(n·w) theoretical, approximately O(n·log n) empirically
-- **Strengths**: 
-  - Simple, intuitive approach
-  - Good balance between efficiency and expressiveness
-- **Weaknesses**: 
-  - Limited context window
-  - Cannot capture very long-range dependencies
-
-### Hopfield Network
-- **Complexity**: O(n) theoretical and empirical
-- **Strengths**: 
-  - Associative memory capabilities
-  - Good pattern completion/retrieval
-  - Similar efficiency to Linear Transformer
-- **Weaknesses**: 
-  - Complex energy-based formulation
-  - Moderate performance penalty over Linear
-
-### Gated Attention Unit (GAU)
-- **Complexity**: O(n·log n) theoretical, close to O(n) empirically
-- **Strengths**: 
-  - Competitive inference speed (3rd fastest)
-  - Chunk-based processing with gating for improved expressiveness
-  - Good balance of efficiency and effectiveness
-- **Weaknesses**: 
-  - More complex implementation
-  - Higher parameter count than linear variants
 
 ## Running Evaluations
 
-To run the model comparison:
+**Prerequisites:**
+1.  Ensure `uv` is installed.
+2.  Create and activate a virtual environment: `uv venv` then `.\.venv\Scripts\activate` (Windows) or `source .venv/bin/activate` (Linux/macOS).
+3.  Install dependencies: `uv pip install -r requirements.txt`.
+4.  Install the project in editable mode: `uv pip install -e .`.
 
-```bash
-# Run all models with default settings
-python evals/compare_models.py
+**Execution:**
 
-# Run specific models
-python evals/compare_models.py --models BSBR Linear Hopfield GAU
+Run the scripts from the project root directory. Due to Python import resolution issues when running scripts in subdirectories directly, modifying `PYTHONPATH` might be necessary.
 
-# Test with different sequence lengths
-python evals/compare_models.py --seq_lengths 256 512 1024 2048
+```powershell
+# --- Step 1: Run Benchmarks ---
+# (Activate venv first if not already active)
+$env:PYTHONPATH=".;$env:PYTHONPATH"; python research/architecture_comparisons/compare_models.py
 
-# Test with different model parameters
-python evals/compare_models.py --hidden_dim 128 --num_layers 4 --num_heads 2
+# Example: Run specific models
+$env:PYTHONPATH=".;$env:PYTHONPATH"; python research/architecture_comparisons/compare_models.py --models BSBR Linear Hopfield GAU
+
+# Example: Test with different sequence lengths
+$env:PYTHONPATH=".;$env:PYTHONPATH"; python research/architecture_comparisons/compare_models.py --seq_lengths 256 512 1024
+
+# Example: Use GPU if available
+$env:PYTHONPATH=".;$env:PYTHONPATH"; python research/architecture_comparisons/compare_models.py --device cuda
+
+# --- Step 2: Analyze Results ---
+# (Uses results/comparison_results.json generated by Step 1)
+python research/architecture_comparisons/analyze_results.py
+
+# --- Step 3: Visualize Results ---
+# (Uses results/comparison_results.json generated by Step 1)
+python research/architecture_comparisons/visualize_models.py
+
+# Example: Generate only specific plot types
+python research/architecture_comparisons/visualize_models.py --plot_types heatmap radar
 ```
 
-To analyze results:
+*(Note: The `$env:PYTHONPATH...` prefix is for PowerShell. Use `export PYTHONPATH=.:$PYTHONPATH; ...` for bash/zsh)*
 
-```bash
-# Use example data
-python evals/analyze_results.py --use_example_data
-
-# Provide your own sequence lengths if different from default
-python evals/analyze_results.py --seq_lengths 128 256 512 1024 2048
-```
-
-This will generate complexity analysis plots:
-
-1. `complexity_analysis.png`: Shows the inference time vs sequence length with theoretical curves
-2. `complexity_loglog.png`: Log-log plot to help visualize the asymptotic complexity
+This will generate the raw data JSON file and various analysis/visualization PNG files in the `research/architecture_comparisons/results/` directory.
 
 ## Conclusion
 
-Our evaluation reveals that while all architectures perform well for short sequences, they diverge significantly as sequence length increases:
+Based on this specific CPU run:
 
-- **BSBR** provides the best overall performance, making it ideal for practical applications.
-- **Linear variants** (Linear, DeltaNet, Hopfield) offer theoretically optimal scaling but at a constant performance cost.
-- **Window-based approaches** (SlidingWindow, GAU) provide a good compromise between full attention and pure linear scaling.
-- **Standard Transformer** remains most expressive but least efficient for long sequences.
+*   **Standard Transformer** and **Hopfield** were surprisingly fast at n=1024, outperforming BSBR. This might be due to CPU overhead or specific implementation details benefiting them at this scale on CPU.
+*   **BSBR** showed good scaling (near linear) but had higher absolute times compared to Standard/Hopfield in this run. It also had the highest baseline memory usage, though it remained constant.
+*   **Linear** and **DeltaNet** showed poor absolute performance, especially DeltaNet.
+*   **GAU** showed slightly worse than linear scaling (O(n^1.30)) and was relatively slow.
 
-For production systems requiring both efficiency and expressivity, BSBR emerges as the preferred architecture, though GAU also shows promise for specific applications where gating mechanisms can be beneficial. 
+**Important Considerations:**
+*   These results are from a single CPU run. Performance characteristics, especially for Standard Transformers, can change dramatically on GPU.
+*   The empirical scaling observed might not hold for much larger sequence lengths where theoretical complexity becomes dominant.
+
+For production systems requiring efficiency *and* expressivity, especially on GPUs or for very long sequences, BSBR remains a strong candidate due to its favorable theoretical scaling and balanced design. However, Standard and Hopfield might be competitive on CPU for moderate sequence lengths based on this run. GAU and the Linear variants (especially DeltaNet) appear less competitive in this specific evaluation. 

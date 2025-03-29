@@ -26,7 +26,7 @@ The architectures evaluated include:
 
 ### Computational Complexity Visualization
 
-![Scaling Curves](visualization_results/scaling_curves.png)
+![Scaling Curves](results/scaling_curves.png)
 
 The log-log scaling curves reveal distinct complexity classes among the tested architectures. The visualization confirms our empirical findings that while the Standard Transformer theoretically scales as O(n²), optimized implementations demonstrate sub-quadratic scaling (closer to O(n·log n)) for the sequence lengths tested.
 
@@ -36,7 +36,7 @@ Linear variants (Linear Transformer, Hopfield, DeltaNet) follow almost identical
 
 ### Performance Heatmap Analysis
 
-![Inference Heatmap](visualization_results/inference_heatmap.png)
+![Inference Heatmap](results/inference_heatmap.png)
 
 The inference time heatmap provides a normalized view of relative performance across sequence lengths. Several key patterns emerge:
 
@@ -50,7 +50,7 @@ The inference time heatmap provides a normalized view of relative performance ac
 
 ### Multi-dimensional Performance Analysis
 
-![Radar Chart](visualization_results/radar_chart.png)
+![Radar Chart](results/radar_chart.png)
 
 The radar visualization illustrates the multi-dimensional tradeoffs between different architectures across four key metrics:
 
@@ -63,7 +63,7 @@ This visualization highlights that no single architecture dominates across all d
 
 ### Memory Scaling Characteristics
 
-![Memory Scaling](visualization_results/memory_scaling.png)
+![Memory Scaling](results/memory_scaling.png)
 
 Memory consumption patterns provide crucial insights into the practical deployment constraints of these architectures:
 
@@ -77,7 +77,7 @@ Memory consumption patterns provide crucial insights into the practical deployme
 
 ### Holistic Performance Analysis
 
-![Combined Performance](visualization_results/combined_performance.png)
+![Combined Performance](results/combined_performance.png)
 
 The combined performance visualization integrates three critical dimensions: inference time (y-axis), memory usage (x-axis), and parameter count (bubble size). This holistic view reveals several insights:
 

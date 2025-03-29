@@ -1,118 +1,108 @@
 # Research Benchmarks
 
-This document provides detailed benchmark results comparing BSBR with other transformer architectures.
+This document provides detailed benchmark results comparing BSBR with other transformer architectures based on the experiments run in the `research/architecture_comparisons/` directory.
 
 ## Benchmark Setup
 
 ### Environment
 
-```python
-benchmark_config = {
-    'hardware': {
-        'gpu': 'NVIDIA A100 (40GB)',
-        'cpu': '32 cores',
-        'memory': '256GB RAM',
-        'storage': '2TB NVMe SSD'
-    },
-    'software': {
-        'pytorch': '2.6.0',
-        'cuda': '11.8',
-        'python': '3.12',
-        'bsbr': '0.1.1'
-    }
-}
-```
+-   **Hardware**: CPU (Intel Core i9)
+-   **Software**: Python 3.12, PyTorch, Transformers, etc. (see `requirements.txt`)
+-   **BSBR Version**: 0.1.2
 
-### Models
+### Models Compared
 
-```python
-model_configs = {
-    'BSBR': {
-        'hidden_dim': 512,
-        'num_layers': 4,
-        'num_heads': 8,
-        'chunk_size': 128,
-        'ff_dim': 2048,
-        'dropout': 0.1
-    },
-    'Standard': {
-        'hidden_dim': 512,
-        'num_layers': 4,
-        'num_heads': 8,
-        'ff_dim': 2048,
-        'dropout': 0.1
-    },
-    'Linear': {
-        'hidden_dim': 512,
-        'num_layers': 4,
-        'num_heads': 8,
-        'ff_dim': 2048,
-        'dropout': 0.1
-    }
-}
-```
+Models were configured with comparable hyperparameters (hidden dim: 256, heads: 4, layers: 2 where applicable) for evaluation.
 
-## Performance Benchmarks
+1.  **BSBR (Block Sparse Attention with Block Retrieval)**
+2.  **Standard Transformer**
+3.  **Linear Transformer**
+4.  **DeltaNet**
+5.  **Sliding Window Transformer**
+6.  **Hopfield Network**
+7.  **GAU (Gated Attention Unit)**
 
-### Inference Time
+### Parameter Counts
 
-```python
-inference_results = {
-    'sequence_lengths': [64, 128, 256, 512, 1024, 2048],
-    'BSBR': {
-        'time': [0.1, 0.15, 0.25, 0.4, 0.7, 1.2],  # seconds
-        'scaling': 'linear'
-    },
-    'Standard': {
-        'time': [0.1, 0.3, 1.0, 3.5, 12.0, 42.0],  # seconds
-        'scaling': 'quadratic'
-    },
-    'Linear': {
-        'time': [0.1, 0.15, 0.25, 0.4, 0.7, 1.2],  # seconds
-        'scaling': 'linear'
-    }
-}
-```
+| Model         | Parameters (Millions) | Relative to Base (Standard) |
+|---------------|----------------------|-----------------------------|
+| BSBR          | 6.0M                 | 1.66x                       |
+| Standard      | 3.6M                 | 1.0x                        |
+| Linear        | 3.6M                 | 1.0x                        |
+| DeltaNet      | 3.6M                 | 1.0x                        |
+| SlidingWindow | 3.6M                 | 1.0x                        |
+| Hopfield      | 3.6M                 | 1.0x                        |
+| GAU           | 4.4M                 | 1.22x                       |
 
-### Memory Usage
+*Data source: `research/architecture_comparisons/results/comparison_results.json`*
 
-```python
-memory_results = {
-    'sequence_lengths': [64, 128, 256, 512, 1024, 2048],
-    'BSBR': {
-        'peak_memory': [0.5, 0.8, 1.2, 1.8, 2.5, 3.3],  # GB
-        'gradient_memory': [0.3, 0.5, 0.7, 1.0, 1.4, 1.8]  # GB
-    },
-    'Standard': {
-        'peak_memory': [1.0, 2.0, 4.0, 8.0, 16.0, 32.0],  # GB
-        'gradient_memory': [0.8, 1.6, 3.2, 6.4, 12.8, 25.6]  # GB
-    },
-    'Linear': {
-        'peak_memory': [0.5, 0.8, 1.2, 1.8, 2.5, 3.3],  # GB
-        'gradient_memory': [0.3, 0.5, 0.7, 1.0, 1.4, 1.8]  # GB
-    }
-}
-```
+## Performance Benchmarks (CPU)
 
-### FLOPs Count
+Results are based on runs with sequence lengths [64, 128, 256, 512, 1024].
+*Data source: `research/architecture_comparisons/results/comparison_results.json`*
 
-```python
-flops_results = {
-    'sequence_lengths': [64, 128, 256, 512, 1024, 2048],
-    'BSBR': {
-        'flops': [1e9, 2e9, 4e9, 8e9, 16e9, 32e9],
-        'scaling': 'linear'
-    },
-    'Standard': {
-        'flops': [1e9, 4e9, 16e9, 64e9, 256e9, 1024e9],
-        'scaling': 'quadratic'
-    },
-    'Linear': {
-        'flops': [1e9, 2e9, 4e9, 8e9, 16e9, 32e9],
-        'scaling': 'linear'
-    }
-}
-```
+### Inference Time (seconds)
+
+| Model         | n=64  | n=128 | n=256 | n=512  | n=1024  |
+|---------------|-------|-------|-------|--------|---------|
+| BSBR          | 0.462 | 0.560 | 0.753 | 1.570  | 3.092   |
+| Linear        | 1.570 | 2.742 | 4.896 | 8.879  | 17.322  |
+| DeltaNet      | 8.085 | 13.31 | 23.71 | 46.166 | 92.276  |
+| Standard      | 0.254 | 0.334 | 0.453 | 0.908  | 2.538   |
+| SlidingWindow | 0.514 | 0.748 | 1.289 | 2.442  | 5.568   |
+| Hopfield      | 0.255 | 0.365 | 0.478 | 0.937  | 2.568   |
+| GAU           | 0.488 | 0.880 | 1.950 | 5.381  | 17.649  |
+
+### Peak Memory Usage (MB)
+
+| Model         | n=64   | n=128  | n=256  | n=512  | n=1024  |
+|---------------|--------|--------|--------|--------|---------|
+| BSBR          | 22.826 | 22.826 | 22.827 | 22.829 | 22.833  |
+| Linear        | 13.790 | 13.790 | 13.791 | 13.793 | 13.797  |
+| DeltaNet      | 13.790 | 13.790 | 13.791 | 13.793 | 13.797  |
+| Standard      | 13.790 | 13.790 | 13.791 | 13.793 | 13.797  |
+| SlidingWindow | 13.790 | 13.790 | 13.791 | 13.793 | 13.797  |
+| Hopfield      | 13.790 | 13.790 | 13.791 | 13.793 | 13.797  |
+| GAU           | 16.799 | 16.800 | 16.801 | 16.803 | 16.807  |
+
+### Complexity Analysis
+
+Based on fitting power-law curves to the inference time data.
+
+| Model         | Empirical Complexity | R-squared | Time at n=1024 (seconds) | Memory at n=1024 (MB) |
+|---------------|----------------------|-----------|--------------------------|----------------------|
+| BSBR          | O(n^0.70) ≈ O(n)     | 0.9380    | 3.0916                   | 22.83                |
+| Standard      | O(n^0.81) ≈ O(n)     | 0.9212    | 2.5382                   | 13.80                |
+| Linear        | O(n^0.86) ≈ O(n)     | 0.9988    | 17.3223                  | 13.80                |
+| DeltaNet      | O(n^0.88) ≈ O(n)     | 0.9956    | 92.2763                  | 13.80                |
+| SlidingWindow | O(n^0.86) ≈ O(n)     | 0.9804    | 5.5680                   | 13.80                |
+| Hopfield      | O(n^0.80) ≈ O(n)     | 0.9308    | 2.5681                   | 13.80                |
+| GAU           | O(n^1.30) ≈ O(n log n)| 0.9826    | 17.6486                  | 16.81                |
+
+*Note: Empirical complexity measured on CPU for n <= 1024 may differ from theoretical asymptotic behavior, especially for Standard attention.*
+
+### Visualizations
+
+*Note: Paths are relative to the `docs/` directory.*
+
+**Complexity & Scaling:**
+
+![Complexity Analysis](../research/architecture_comparisons/results/complexity_analysis.png)
+![Log-Log Complexity](../research/architecture_comparisons/results/complexity_loglog.png)
+![Scaling Curves](../research/architecture_comparisons/results/scaling_curves.png)
+
+**Performance Comparison:**
+
+![Inference Heatmap](../research/architecture_comparisons/results/inference_heatmap.png)
+![Radar Chart](../research/architecture_comparisons/results/radar_chart.png)
+![Memory Scaling](../research/architecture_comparisons/results/memory_scaling.png)
+![Combined Performance](../research/architecture_comparisons/results/combined_performance.png)
+![Basic Comparison](../research/architecture_comparisons/results/model_comparison.png)
+![Summary Dashboard](../research/architecture_comparisons/results/summary_dashboard.png)
+
+---
+
+*Sections below contain placeholder data and are for illustrative purposes only.*
 
 ## Training Benchmarks
 
@@ -251,55 +241,16 @@ gpu_utilization = {
 ```python
 cpu_utilization = {
     'BSBR': {
-        'cpu_util': 40,  # percentage
-        'memory_util': 30,  # percentage
-        'io_util': 20  # percentage
+        'cpu_util': 60,  # percentage
+        'peak_memory': 2.5  # GB
     },
     'Standard': {
-        'cpu_util': 50,  # percentage
-        'memory_util': 70,  # percentage
-        'io_util': 30  # percentage
+        'cpu_util': 50,
+        'peak_memory': 16.0  # GB
     },
     'Linear': {
-        'cpu_util': 35,  # percentage
-        'memory_util': 25,  # percentage
-        'io_util': 15  # percentage
+        'cpu_util': 55,
+        'peak_memory': 2.5  # GB
     }
 }
-```
-
-## Summary
-
-### Key Findings
-
-1. **Performance**
-   - BSBR achieves linear scaling with sequence length
-   - Significantly lower memory usage compared to standard attention
-   - Competitive inference time with other efficient methods
-
-2. **Training**
-   - Similar convergence speed to standard attention
-   - Much lower memory requirements during training
-   - Stable training dynamics
-
-3. **Task Performance**
-   - Comparable accuracy to standard attention
-   - Better handling of long sequences
-   - More efficient inference
-
-### Recommendations
-
-1. **Use Cases**
-   - Long document processing
-   - Memory-constrained environments
-   - Real-time applications
-
-2. **Configuration**
-   - Chunk size: 128 for general use
-   - Compression factor: 4 for memory efficiency
-   - Batch size: 32 for optimal performance
-
-3. **Hardware**
-   - GPU with at least 8GB memory
-   - Fast storage for data loading
-   - Sufficient CPU cores for preprocessing 
+``` 
