@@ -12,7 +12,14 @@ import os
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from src.bsbr import BSBRModel
-from src.bsbr_extras import LinearTransformerModel, DeltaNetModel
+from src.bsbr_extras import (
+    LinearTransformerModel, 
+    DeltaNetModel, 
+    StandardTransformerModel, 
+    SlidingWindowTransformerModel,
+    HopfieldNetworkModel,
+    GAUModel
+)
 
 
 class AutoregressiveEvaluator:
@@ -25,10 +32,14 @@ class AutoregressiveEvaluator:
         num_layers (int): Number of layers
         num_heads (int): Number of attention heads
         ff_dim (int): Feed-forward dimension
-        chunk_size (int): Chunk size for BSBR model
+        chunk_size (int): Chunk size for BSBR model and GAU
+        window_size (int): Window size for SlidingWindowTransformer
         beta (float): Beta parameter for DeltaNet model
+        temperature (float): Temperature parameter for HopfieldNetwork
+        expansion_factor (int): Expansion factor for GAU
         dropout (float): Dropout probability
         device (str): Device to use for computation
+        model_selection (list): List of model names to evaluate
     """
     def __init__(
         self,
@@ -38,9 +49,13 @@ class AutoregressiveEvaluator:
         num_heads: int = 4,
         ff_dim: int = 512,
         chunk_size: int = 32,
+        window_size: int = 32,
         beta: float = 0.9,
+        temperature: float = 1.0,
+        expansion_factor: int = 2,
         dropout: float = 0.1,
-        device: str = 'cpu'
+        device: str = 'cpu',
+        model_selection: List[str] = None
     ):
         self.vocab_size = vocab_size
         self.hidden_dim = hidden_dim
@@ -48,9 +63,13 @@ class AutoregressiveEvaluator:
         self.num_heads = num_heads
         self.ff_dim = ff_dim
         self.chunk_size = chunk_size
+        self.window_size = window_size
         self.beta = beta
+        self.temperature = temperature
+        self.expansion_factor = expansion_factor
         self.dropout = dropout
         self.device = torch.device(device)
+        self.model_selection = model_selection or ["BSBR", "Linear", "DeltaNet", "Standard", "SlidingWindow", "Hopfield", "GAU"]
         
         # Create models
         self.models = self._create_models()
@@ -60,7 +79,7 @@ class AutoregressiveEvaluator:
         
     def _create_models(self) -> Dict[str, nn.Module]:
         """Create the different model variants."""
-        models = {
+        available_models = {
             "BSBR": BSBRModel(
                 vocab_size=self.vocab_size,
                 hidden_dim=self.hidden_dim,
@@ -72,7 +91,7 @@ class AutoregressiveEvaluator:
                 compression_factor=2  # Compression for BSBR
             ).to(self.device),
             
-            "LinearTransformer": LinearTransformerModel(
+            "Linear": LinearTransformerModel(
                 vocab_size=self.vocab_size,
                 hidden_dim=self.hidden_dim,
                 num_layers=self.num_layers,
@@ -89,10 +108,50 @@ class AutoregressiveEvaluator:
                 ff_dim=self.ff_dim,
                 beta=self.beta,
                 dropout=self.dropout
+            ).to(self.device),
+            
+            "Standard": StandardTransformerModel(
+                vocab_size=self.vocab_size,
+                hidden_dim=self.hidden_dim,
+                num_layers=self.num_layers,
+                num_heads=self.num_heads,
+                ff_dim=self.ff_dim,
+                dropout=self.dropout
+            ).to(self.device),
+            
+            "SlidingWindow": SlidingWindowTransformerModel(
+                vocab_size=self.vocab_size,
+                hidden_dim=self.hidden_dim,
+                num_layers=self.num_layers,
+                num_heads=self.num_heads,
+                window_size=self.window_size,
+                ff_dim=self.ff_dim,
+                dropout=self.dropout
+            ).to(self.device),
+            
+            "Hopfield": HopfieldNetworkModel(
+                vocab_size=self.vocab_size,
+                hidden_dim=self.hidden_dim,
+                num_layers=self.num_layers,
+                num_heads=self.num_heads,
+                ff_dim=self.ff_dim,
+                temperature=self.temperature,
+                dropout=self.dropout
+            ).to(self.device),
+            
+            "GAU": GAUModel(
+                vocab_size=self.vocab_size,
+                hidden_dim=self.hidden_dim,
+                num_layers=self.num_layers,
+                chunk_size=self.chunk_size,
+                ff_dim=self.ff_dim,
+                expansion_factor=self.expansion_factor,
+                dropout=self.dropout
             ).to(self.device)
         }
         
-        return models
+        # Filter models based on selection
+        return {name: model for name, model in available_models.items() if name in self.model_selection}
     
     def count_parameters(self) -> Dict[str, int]:
         """Count the number of parameters in each model."""
@@ -137,7 +196,7 @@ class AutoregressiveEvaluator:
                 
                 # For recurrent models, initialize states
                 states = None
-                if name in ["LinearTransformer", "DeltaNet"]:
+                if name in ["Linear", "DeltaNet", "Hopfield"]:
                     # Warm-up to initialize states
                     with torch.no_grad():
                         _, states = model(input_ids, attention_mask)
@@ -147,11 +206,11 @@ class AutoregressiveEvaluator:
                 
                 with torch.no_grad():
                     for _ in range(n_tokens):
-                        if name == "BSBR":
-                            # BSBR doesn't use states
+                        if name in ["BSBR", "Standard", "SlidingWindow", "GAU"]:
+                            # These models don't use states
                             hidden_states = model(input_ids, attention_mask)
                         else:
-                            # LinearTransformer and DeltaNet use states
+                            # Models with stateful layers
                             hidden_states, states = model(input_ids, attention_mask, states)
                         
                         # Get next token prediction
@@ -206,7 +265,7 @@ class AutoregressiveEvaluator:
                 
                 # Forward pass
                 with torch.no_grad():
-                    if name == "BSBR":
+                    if name in ["Linear", "DeltaNet", "Hopfield"]:
                         model(input_ids, attention_mask)
                     else:
                         model(input_ids, attention_mask)
@@ -238,8 +297,12 @@ class AutoregressiveEvaluator:
         # Set colors for each model
         colors = {
             "BSBR": "blue",
-            "LinearTransformer": "green", 
-            "DeltaNet": "red"
+            "Linear": "green", 
+            "DeltaNet": "red",
+            "Standard": "purple",
+            "SlidingWindow": "orange",
+            "Hopfield": "brown",
+            "GAU": "pink"
         }
         
         # Plot inference time
@@ -281,16 +344,22 @@ def main():
     parser.add_argument("--num_layers", type=int, default=2, help="Number of layers")
     parser.add_argument("--num_heads", type=int, default=4, help="Number of attention heads")
     parser.add_argument("--ff_dim", type=int, default=512, help="Feed-forward dimension")
-    parser.add_argument("--chunk_size", type=int, default=32, help="Chunk size for BSBR")
+    parser.add_argument("--chunk_size", type=int, default=32, help="Chunk size for BSBR and GAU")
+    parser.add_argument("--window_size", type=int, default=32, help="Window size for SlidingWindowTransformer")
     parser.add_argument("--beta", type=float, default=0.9, help="Beta parameter for DeltaNet")
+    parser.add_argument("--temperature", type=float, default=1.0, help="Temperature parameter for Hopfield Network")
+    parser.add_argument("--expansion_factor", type=int, default=2, help="Expansion factor for GAU")
     parser.add_argument("--dropout", type=float, default=0.1, help="Dropout probability")
     parser.add_argument("--device", type=str, default="cuda" if torch.cuda.is_available() else "cpu", 
                         help="Device to use (cuda or cpu)")
     parser.add_argument("--output", type=str, default="model_comparison.png", help="Output file for plots")
-    parser.add_argument("--seq_lengths", type=int, nargs="+", default=[64, 128, 256, 512, 1024, 2048], 
+    parser.add_argument("--seq_lengths", type=int, nargs="+", default=[64, 128, 256, 512, 1024], 
                         help="Sequence lengths to test")
     parser.add_argument("--n_tokens", type=int, default=50, 
                         help="Number of tokens to generate for inference time test")
+    parser.add_argument("--models", type=str, nargs="+", 
+                        default=["BSBR", "Linear", "DeltaNet", "Standard", "SlidingWindow", "Hopfield", "GAU"],
+                        help="Models to evaluate: BSBR, Linear, DeltaNet, Standard, SlidingWindow, Hopfield, GAU")
     
     args = parser.parse_args()
     
@@ -301,9 +370,13 @@ def main():
         num_heads=args.num_heads,
         ff_dim=args.ff_dim,
         chunk_size=args.chunk_size,
+        window_size=args.window_size,
         beta=args.beta,
+        temperature=args.temperature,
+        expansion_factor=args.expansion_factor,
         dropout=args.dropout,
-        device=args.device
+        device=args.device,
+        model_selection=args.models
     )
     
     # Count parameters
