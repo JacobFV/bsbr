@@ -1,4 +1,4 @@
-![](bsbr_repo_cover.png)
+![](https://github.com/JacobFV/bsbr/bsbr_repo_cover.png)
 
 # BSBR: Block Sparse Attention with Block Retrieval
 
@@ -12,6 +12,8 @@ A PyTorch implementation of Block Sparse Attention with Block Retrieval (BSBR), 
 - Configurable chunk size
 - Optional state compression
 - Memory efficient with linear complexity in sequence length
+
+Read our analysis of the BSBR compared against other models [here](https://github.com/JacobFV/bsbr/tree/main/blog.md)
 
 ## Implemented Transformer Architectures
 
