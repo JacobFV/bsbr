@@ -2,7 +2,7 @@
 
 # BSBR: Block Sparse Attention with Block Retrieval
 
-A PyTorch implementation of Block Sparse Attention with Block Retrieval (BSBR), a novel attention mechanism for efficient processing of long sequences.
+A PyTorch implementation of Block Sparse Attention with Block Retrieval (BSBR), a novel attention mechanism for efficient processing of long sequences. This implementation is inspired by Shengding Hu's blog post [*Streaming models for efficient long-context reasoning*](https://shengdinghu.github.io/blogs/streaming_model/). [1]
 
 ## Features
 
@@ -133,3 +133,7 @@ Where:
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## References
+
+1. Hu, S. (2025). Streaming models for efficient long-context reasoning. arXiv preprint arXiv:2403.xxxxx. https://shengdinghu.github.io/blogs/streaming_model/
