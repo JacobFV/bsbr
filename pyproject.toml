@@ -8,11 +8,7 @@ authors = [
 ]
 requires-python = ">=3.12"
 dependencies = [
-    "matplotlib>=3.10.1",
     "numpy>=2.2.4",
-    "pandas>=2.2.3",
-    "pytest>=8.3.5",
-    "seaborn>=0.13.2",
     "torch>=2.6.0",
 ]
 
@@ -30,6 +26,8 @@ extras = [
     "pytest>=8.3.5",
     "seaborn>=0.13.2",
     "torch>=2.6.0",
+    "transformers>=4.36.0",
+    "accelerate>=0.25.0",
 ]
 docs = [
     "mkdocs>=1.5.3",
