@@ -11,11 +11,8 @@ import os
 # Add the project root to the path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.bsbr import (
-    BSBRModel, 
-    LinearTransformerModel,
-    DeltaNetModel
-)
+from src.bsbr import BSBRModel
+from src.bsbr_extras import LinearTransformerModel, DeltaNetModel
 
 
 class AutoregressiveEvaluator:

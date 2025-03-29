@@ -18,8 +18,11 @@ A PyTorch implementation of Block Sparse Attention with Block Retrieval (BSBR), 
 git clone https://github.com/yourusername/bsbr.git
 cd bsbr
 
-# Install the package
+# Install the core package
 pip install -e .
+
+# Install with extras for evaluations and research
+pip install -e ".[extras]"
 ```
 
 ## Usage
@@ -55,6 +58,15 @@ outputs = model(input_ids, attention_mask)
 - **BSBRAttention**: The core attention mechanism
 - **BSBRLayer**: A complete transformer layer with BSBR attention and feed-forward network
 - **BSBRModel**: A full model with embedding, multiple BSBR layers, and normalization
+
+### Additional Models (Extras)
+
+For evaluation and research purposes, we also include:
+
+- **LinearTransformer**: Linear complexity transformer using a reformulated attention mechanism
+- **DeltaNet**: Enhanced linear transformer with a removal component for better memory management
+
+These additional models are available in the `bsbr_extras` package and can be installed with the `extras` option.
 
 ## Algorithm
 

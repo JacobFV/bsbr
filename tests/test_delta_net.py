@@ -1,6 +1,6 @@
 import pytest
 import torch
-from bsbr.delta_net import DeltaNetAttention, DeltaNetLayer, DeltaNetModel
+from bsbr_extras.delta_net import DeltaNetAttention, DeltaNetLayer, DeltaNetModel
 
 
 def test_delta_net_attention_init(device, model_config):

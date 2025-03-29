@@ -1,6 +1,6 @@
 import pytest
 import torch
-from bsbr.linear_transformer import LinearAttention, LinearTransformerLayer, LinearTransformerModel
+from bsbr_extras.linear_transformer import LinearAttention, LinearTransformerLayer, LinearTransformerModel
 
 
 def test_linear_attention_init(device, model_config):
