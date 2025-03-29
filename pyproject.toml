@@ -1,7 +1,7 @@
 [project]
 name = "bsbr"
 version = "0.1.0"
-description = "Add your description here"
+description = "Block Sparse Attention with Block Retrieval"
 readme = "README.md"
 authors = [
     { name = "jacob", email = "jacobfv123@gmail.com" }
@@ -17,7 +17,14 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-extras = []
+extras = [
+    "matplotlib>=3.10.1",
+    "numpy>=2.2.4",
+    "pandas>=2.2.3",
+    "pytest>=8.3.5",
+    "seaborn>=0.13.2",
+    "torch>=2.6.0",
+]
 
 [build-system]
 requires = ["hatchling"]
