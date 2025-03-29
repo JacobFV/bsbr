@@ -11,3 +11,4 @@ wheels/
 
 # commandAGI files
 .commandAGI/
+.exclude/
